@@ -42,3 +42,9 @@ Example scripts:
 
     $ cat demo.txt | n-stats
     n: 3 min: 1 max: 4 sum: 7 range: 3 median: 2 mean: 2.33333 sd: 1.24722
+
+These statistics scripts run using simple shell commands, such as `awk` and `sort`.
+
+These scripts are intended to run on any shell, and independent of any higher-level languages and tool.
+
+For more sophisticated statistics needs, we recommend the R language: http://www.r-project.org/
