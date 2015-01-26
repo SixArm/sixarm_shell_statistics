@@ -45,6 +45,6 @@ Example scripts:
 
 These statistics scripts run using simple shell commands, such as `awk` and `sort`.
 
-These scripts are intended to run on any shell, and independent of any higher-level languages and tool.
+These scripts can run on any typical shell, independent of higher-level languages.
 
 For more sophisticated statistics needs, we recommend the R language: http://www.r-project.org/
