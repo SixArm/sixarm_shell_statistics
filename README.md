@@ -1,4 +1,4 @@
-# SixArm.com » Shell » Statistics scripts
+# Shell » Statistics scripts
 
 Statistics scripts for lists of numbers using shell pipes:
 
