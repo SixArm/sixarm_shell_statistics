@@ -1,0 +1,17 @@
+#!/bin/sh
+set -euf
+
+##
+# Input a list of numbers, output the count.
+#
+# Example:
+#
+#     $ echo "1\n2\n4" | n-count
+#     3
+#
+# Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL
+# Updated: 2015-03-27
+##
+
+awk 'END{print NR}'

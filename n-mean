@@ -1,5 +1,5 @@
 #!/bin/sh
-set -euf -o pipefail
+set -euf
 
 ##
 # Input a list of numbers, output the arithmetic mean a.k.a. average.
@@ -14,4 +14,4 @@ set -euf -o pipefail
 # Updated: 2015-01-25
 ##
 
-awk '{ sum += $1 }; END { print sum/NR }'
+awk '{ sum += $1 }; END { print sum / NR }'
