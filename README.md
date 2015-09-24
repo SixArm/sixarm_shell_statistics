@@ -2,15 +2,15 @@
 
 Statistics scripts for lists of numbers using shell pipes:
 
-  * `n-count`: Print the count.
-  * `n-min`: Print the minimum number.
-  * `n-max`: Print the maxmium number.
-  * `n-sum`: Print the sum of the numbers.
-  * `n-median`: Print the median of the numbers.
-  * `n-mean`: Print the mean of the numbers.
-  * `n-range`: Print the range of the numbers.
-  * `n-sd`: Print the standard deviation of the numbers.
-  * `n-stats`: Print all of the above statistics of the numbers.
+  * `row-count`: Print the count.
+  * `row-min`: Print the minimum number.
+  * `row-max`: Print the maxmium number.
+  * `row-sum`: Print the sum of the numbers.
+  * `row-median`: Print the median of the numbers.
+  * `row-mean`: Print the mean of the numbers.
+  * `row-range`: Print the range of the numbers.
+  * `row-sd`: Print the standard deviation of the numbers.
+  * `row-stats`: Print all of the above statistics of the numbers.
 
 
 ## Examples
@@ -23,31 +23,31 @@ Example: suppose you have a file `nums` like this:
 
 Example scripts:
 
-    $ cat nums | n-count
+    $ cat nums | row-count
     3
 
-    $ cat nums | n-min
+    $ cat nums | row-min
     1
 
-    $ cat nums | n-max
+    $ cat nums | row-max
     4
 
-    $ cat nums | n-sum
+    $ cat nums | row-sum
     7
 
-    $ cat nums | n-median
+    $ cat nums | row-median
     2
 
-    $ cat nums | n-mean
+    $ cat nums | row-mean
     2.33333
 
-    $ cat nums | n-range
+    $ cat nums | row-range
     3
 
-    $ cat nums | n-sd
+    $ cat nums | row-sd
     1.24722
 
-    $ cat nums | n-stats
+    $ cat nums | row-stats
     count: 3 min: 1 max: 4 sum: 7 range: 3 median: 2 mean: 2.33333 sd: 1.24722
 
 
@@ -62,11 +62,11 @@ These statistics scripts are simple:
   * For more power, we recommend the R language: http://www.r-project.org/
 
 
-## Considerations
+## Help
 
 These statistics scripts are line-oriented; the scripts expect one number per line.
 
-To process a file that has multiple numbers per line, such as:
+To process a list that has multiple numbers per line, such as:
 
     1 2 3
     4 5 6
