@@ -64,9 +64,7 @@ Example scripts:
 
 These statistics scripts are simple:
 
-  * They use shell commands such as `awk` and `sort`; they do not need any higher-level languages.
-
-  * They are POSIX standard; they do not use any extensions from GNU tools or specific shells.
+  * They are implemented using the shell command `awk`, and do not need any higher-level languages.
 
   * For more power, we recommend the R language: http://www.r-project.org/
 
