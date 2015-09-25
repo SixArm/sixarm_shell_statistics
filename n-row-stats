@@ -36,8 +36,8 @@ END{
   for (i = 1; i <= n; i++){
     sumsq += (a[i] - mean) ** 2;
   }
-  sd = sqrt(sumsq/n)
-  cv = sd/mean
+  sd = sqrt(sumsq / n)
+  cv = sd / mean
 
-  print "n:", n, "min:", min, "max:", max, "sum:", sum, "range:", range, "median:", median, "mean:", mean, "sumsq:", sumsq, "sd:", sd, "cv:", cv
+  print "n:", n, "min:", min, "max:", max, "range:", range, "sum:", sum, "median:", median, "mean:", mean, "sumsq:", sumsq, "sd:", sd, "cv:", cv
 }'
