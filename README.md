@@ -1,8 +1,13 @@
 # Shell » Statistics scripts
 
-Statistics scripts that calculate on lists of numbers.
+Statistics scripts that calculate based on lists of numbers.
 
-There are scripts for calculating by column list or by row list.
+Example:
+
+    $ echo "1 2 4" | n-col-stats
+    count: 3 min: 1 max: 4 sum: 7 range: 3 median: 2 mean: 2.33333 sumsq: 4.66667 sd: 1.24722 cv: 0.534523
+
+There are specific scripts to calculating by column list or by row list:
 
   * `n-col-count`, `n-row-count`: Print the count.
   * `n-col-min`, `n-row-min`: Print the minimum number.
