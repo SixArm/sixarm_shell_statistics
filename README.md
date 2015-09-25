@@ -9,7 +9,7 @@ Example:
 
 There are specific scripts to calculating by column list or by row list:
 
-  * `n-col-count`, `n-row-count`: Print the count, i.e. the number of items.
+  * `n-col-count`, `n-row-count`: Print the count, i.e. how many columns or rows.
   * `n-col-min`, `n-row-min`: Print the minimum number.
   * `n-col-max`, `n-row-max`: Print the maximum number.
   * `n-col-range`, `n-row-range`: Print the range of the numbers, i.e. max - min.
