@@ -1,0 +1,24 @@
+#!/bin/sh
+set -euf
+
+##
+# Given a list of numbers, calculate the sum.
+#
+# Example:
+#
+#     $ echo "1 2 4" | col-sum
+#     7
+#
+# Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL
+# Updated: 2015-09-25
+# Version: 1.0.1
+##
+
+awk '{
+  sum = 0;
+  for (i = 1; i <= NF; i++){
+    sum += $i
+  }
+  print sum
+}'

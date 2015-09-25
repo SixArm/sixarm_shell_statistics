@@ -2,7 +2,7 @@
 set -euf
 
 ##
-# Input a list of numbers, output the range.
+# Given a list of numbers, calculate the range.
 #
 # Example:
 #
@@ -11,8 +11,8 @@ set -euf
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
 # License: GPL
-# Updated: 2015-01-25
-##
+# Updated: 2015-09-25
+# Version: 1.0.1
 ##
 
 awk '

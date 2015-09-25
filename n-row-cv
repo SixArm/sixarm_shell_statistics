@@ -1,0 +1,31 @@
+#!/bin/sh
+set -euf
+
+##
+# Given a list of numbers, calculate the coefficient of variance.
+#
+# Example:
+#
+#     $ echo "1\n2\n4" | n-row-cv
+#     0.534523
+#
+# Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL
+# Updated: 2015-09-25
+# Version: 1.0.1
+##
+
+awk '{
+  sum += $1
+  a[NR] = $1
+}
+END{
+  n = NR
+  mean = sum/n
+  for (x = 1; x <= n; x++){
+    sumsq += (a[x] - mean) ** 2;
+  }
+  sd = sqrt(sumsq/n)
+  cv = sd/mean
+  print cv
+}'

@@ -2,19 +2,23 @@
 set -euf
 
 ##
-# Input a list of numbers, output the standard deviation.
+# Given a list of numbers, calculate the standard deviation.
 #
 # Example:
 #
-#     $ echo "1\n2\n4" | n-sd
+#     $ echo "1\n2\n4" | n-row-sd
 #     1.24722
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
 # License: GPL
-# Updated: 2015-01-25
+# Updated: 2015-09-25
+# Version: 1.0.1
 ##
 
-awk '{ sum += $1; a[NR] = $1 }
+awk '{
+  sum += $1
+  a[NR] = $1
+}
 END {
   mean = sum/NR
   for (x = 1; x <= NR; x++){

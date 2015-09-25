@@ -2,16 +2,17 @@
 set -euf
 
 ##
-# Input a list of numbers, output the sum.
+# Given a list of numbers, calculate the sum.
 #
 # Example:
 #
-#     $ echo "1\n2\n4" | n-sum
+#     $ echo "1\n2\n4" | n-row-sum
 #     7
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
 # License: GPL
-# Updated: 2015-01-25
+# Updated: 2015-09-25
+# Version: 1.0.1
 ##
 
 awk '{ sum += $1 }; END { print sum }'

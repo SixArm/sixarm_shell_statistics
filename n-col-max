@@ -1,0 +1,24 @@
+#!/bin/sh
+set -euf
+
+##
+# Given a list of numbers, calculate the maximum.
+#
+# Example:
+#
+#     $ echo "1 2 4" | n-col-max
+#     4
+#
+# Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL
+# Updated: 2015-01-25
+# Version: 1.0.1
+##
+
+awk '{
+  max = $1
+  for (i = 2; i <= NF; i++){
+    if ($i > max) { max = $i }
+  }
+  print max
+}'

@@ -2,16 +2,17 @@
 set -euf
 
 ##
-# Input a list of numbers, output the count.
+# Given a list of numbers, calculate the count.
 #
 # Example:
 #
-#     $ echo "1\n2\n4" | n-count
+#     $ echo "1\n2\n4" | n-row-count
 #     3
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
 # License: GPL
-# Updated: 2015-03-27
+# Updated: 2015-09-25
+# Version: 1.0.1
 ##
 
 awk 'END{print NR}'

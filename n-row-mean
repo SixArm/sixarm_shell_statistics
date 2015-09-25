@@ -2,16 +2,17 @@
 set -euf
 
 ##
-# Input a list of numbers, output the arithmetic mean a.k.a. average.
+# Given a list of numbers, calculate the arithmetic mean a.k.a. average.
 #
-# Example:
+# Example run:
 #
-#     $ echo "1\n2\n4" | n-mean
+#     $ echo "1\n2\n4" | n-row-mean
 #     2.33333
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
 # License: GPL
-# Updated: 2015-01-25
+# Updated: 2015-09-25
+# Version: 1.0.1
 ##
 
 awk '{ sum += $1 }; END { print sum / NR }'

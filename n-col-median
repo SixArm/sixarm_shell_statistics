@@ -1,0 +1,28 @@
+#!/bin/sh
+set -euf
+
+##
+# Given a list of numbers, calculate the median.
+#
+# Example:
+#
+#     $ echo "1 2 4" | n-col-median
+#     2
+#
+# Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL
+# Updated: 2015-09-25
+# Version: 1.0.1
+##
+
+awk '{
+  n = NF
+  split($0,a)
+  asort(a)
+  if (n % 2) {
+    median = a[(n + 1) / 2];
+  } else {
+    median = (a[(n / 2)] + a[(n / 2) + 1]) / 2.0;
+  }
+  print median
+}'
