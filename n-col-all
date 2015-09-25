@@ -1,0 +1,94 @@
+#!/bin/sh
+set -euf
+
+##
+# Given a list of numbers, calculate many statistics.
+#
+# Example:
+#
+#     $ echo "1 2 4" | n-col-stats
+#     n: 3 min: 1 max: 4 sum: 7 range: 3 median: 2 mean: 2.33333 sumsq: 16.3333 sd: 1.24722 cv: 0.534523
+#
+# Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL
+# Updated: 2015-09-25
+# Version: 1.0.1
+##
+
+awk '
+
+function sort(){
+  asort(a)
+}
+
+function n(){
+  _n = NF
+}
+
+function sum(){
+  for (i in a){
+    _sum += a[i]
+  }
+}
+
+function mean(){
+  _mean = _sum / _n
+}
+
+function min(){
+  _min = a[1]
+}
+
+function max(){
+  _max = a[_n]
+}
+
+function range(){
+  _range = _max - _min
+}
+
+function median(){
+  if (_n % 2) {
+    _median = a[(_n + 1) / 2];
+  } else {
+    _median = (a[(_n / 2)] + a[(_n / 2) + 1]) / 2.0;
+  }
+}
+
+function sumsq(){
+  for (i in a){
+    _sumsq += (a[i] - _mean) ** 2;
+  }
+}
+
+function sd(){
+  _sd = sqrt(_sumsq / _n)
+}
+
+function cv(){
+  _cv = _sd / _mean
+}
+
+function all(){
+  sort()
+  n()
+  min()
+  max()
+  range()
+  sum()
+  mean()
+  median()
+  sumsq()
+  sd()
+  cv()
+}
+
+function output(){
+  print "n:", _n, "min:", _min, "max:", _max, "range:", _range, "sum:", _sum, "median:", _median, "mean:", _mean, "sumsq:", _sumsq, "sd:", _sd, "cv:", _cv
+}
+
+{
+  split($0,a)
+  all()
+  output()
+}'

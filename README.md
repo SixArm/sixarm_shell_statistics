@@ -19,7 +19,7 @@ There are specific scripts to calculating by column list or by row list:
   * `n-col-sumsq`, `n-row-sumsq`: Print the sum of squares of the numbers.
   * `n-col-sd`, `n-row-sd`: Print the standard deviation of the numbers.
   * `n-col-cv`, `n-row-cv`: Print the coefficient of variance of the numbers, i.e. sd / mean.
-  * `n-col-stats`, `n-row-stats`: Print all of the above statistics of the numbers.
+  * `n-col-all`, `n-row-all`: Print all of the above statistics of the numbers.
 
 
 ## Examples
@@ -56,7 +56,7 @@ Example scripts:
     $ echo "1 2 4" | n-col-cv
     0.534523
 
-    $ echo "1 2 4" | n-col-stats
+    $ echo "1 2 4" | n-col-all
     count: 3 min: 1 max: 4 range: 3 sum: 7 median: 2 mean: 2.33333 sumsq: 4.66667 sd: 1.24722 cv: 0.534523
 
 
