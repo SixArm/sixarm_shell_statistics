@@ -22,8 +22,8 @@ awk '{
 END {
   mean = sum/NR
   for (x = 1; x <= NR; x++){
-    sumsq += (a[x] - mean) ** 2;
+    ss += (a[x] - mean) ** 2;
   }
-  sd = sqrt(sumsq/NR)
+  sd = sqrt(ss/NR)
   print sd
 }'

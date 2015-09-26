@@ -23,9 +23,9 @@ END{
   n = NR
   mean = sum/n
   for (x = 1; x <= n; x++){
-    sumsq += (a[x] - mean) ** 2;
+    ss += (a[x] - mean) ** 2;
   }
-  sd = sqrt(sumsq/n)
+  sd = sqrt(ss/n)
   cv = sd/mean
   print cv
 }'

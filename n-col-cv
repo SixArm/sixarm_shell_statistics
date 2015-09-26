@@ -25,9 +25,9 @@ awk '{
   mean = sum/n
 
   for (i = 1; i <= n; i++){
-    sumsq += (a[i] - mean) ** 2;
+    ss += (a[i] - mean) ** 2;
   }
-  sd = sqrt(sumsq / n)
+  sd = sqrt(ss / n)
   cv = sd / mean
 
   print cv

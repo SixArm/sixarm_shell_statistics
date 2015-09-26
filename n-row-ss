@@ -6,8 +6,8 @@ set -euf
 #
 # Example:
 #
-#     $ echo "1 2 4" | n-col-sumsq
-#     16.3333
+#     $ echo "1\n2\n4" | n-row-ss
+#     4.66667
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
 # License: GPL
@@ -16,17 +16,18 @@ set -euf
 ##
 
 awk '{
-  n = NF
-  split($0,a)
+  sum += $i
+  a[NR] = $1
+}
+END {
 
-  for (i = 1; i <= n; i++){
-    sum += $i
-  }
+awk '{
+  n = NR
   mean = sum / n
 
   for (i = 1; i <= n; i++){
-    sumsq += (a[i] - mean) ** 2;
+    ss += (a[i] - mean) ^ 2;
   }
 
-  print sumsq
+  print ss
 }'
