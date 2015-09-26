@@ -6,7 +6,7 @@ set -euf
 #
 # Example:
 #
-#     $ echo "1\n2\n4" | n-row-stats
+#     $ echo "1\n2\n4" | n-row-all
 #     n: 3 min: 1 max: 4 sum: 7 range: 3 median: 2 mean: 2.33333 sumsq: sd: 1.24722 cv: 0.534523
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
@@ -18,59 +18,92 @@ set -euf
 awk '
 
 function sort(){
-  asort(a)
-}
-
-function n(){
-  _n = NR
-}
-
-function sum(){
-  for (i in a){
-    _sum += a[i]
+  if (_sort == "") {
+    asort(a)
+    _sort = 1
   }
 }
 
+function n(){
+  if (_n == ""){
+    _n = NR
+  }
+  return _n
+}
+
+function sum(){
+  if (_sum == ""){
+    for (i in a){
+      _sum += a[i]
+    }
+  }
+  return _sum
+}
+
 function mean(){
-  _mean = _sum / _n
+  if (_mean == ""){
+    _mean = sum() / n()
+  }
+  return _mean
 }
 
 function min(){
-  _min = a[1]
+  if (_min == ""){
+    sort()
+    _min = a[1]
+  }
+  return _min
 }
 
 function max(){
-  _max = a[_n]
+  if (_max == ""){
+    sort()
+    _max = a[_n]
+  }
+  return _max
 }
 
 function range(){
+  if (_min == "") min()
+  if (_max == "") max()
   _range = _max - _min
 }
 
 function median(){
-  if (_n % 2) {
-    _median = a[(_n + 1) / 2];
-  } else {
-    _median = (a[(_n / 2)] + a[(_n / 2) + 1]) / 2.0;
+  if (_median == ""){
+    if (n() % 2) {
+      _median = a[(n() + 1) / 2];
+    } else {
+      _median = (a[(n() / 2)] + a[(n() / 2) + 1]) / 2.0;
+    }
   }
+  return _median
 }
 
 function sumsq(){
-  for (i in a){
-    _sumsq += (a[i] - _mean) ** 2;
+  if (_sumsq == ""){
+    for (i in a){
+      _sumsq += (a[i] - mean()) ** 2;
+    }
   }
+  return _sumsq
 }
 
 function sd(){
-  _sd = sqrt(_sumsq / _n)
+  if (_sd == ""){
+    _sd = sqrt(sumsq() / n())
+  }
+  return _sd
 }
 
 function cv(){
-  _cv = _sd / _mean
+  if (_cv == ""){
+    _cv = sd() / mean()
+  }
+  return _cv
 }
 
 function all(){
-  sort()
   n()
   min()
   max()
