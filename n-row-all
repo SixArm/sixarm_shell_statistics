@@ -1,13 +1,10 @@
-#!/bin/sh
-set -euf
-
 ##
 # Given a list of numbers, calculate many statistics.
 #
 # Example:
 #
 #     $ echo "1\n2\n4" | n-row-all
-#     n: 3 min: 1 max: 4 sum: 7 range: 3 median: 2 mean: 2.33333 sumsq: sd: 1.24722 cv: 0.534523
+#     n: 3 min: 1 max: 4 sum: 7 range: 3 median: 2 mean: 2.33333 ss: 4.66667 sd: 1.24722 cv: 0.534523
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
 # License: GPL
@@ -17,13 +14,9 @@ set -euf
 
 awk '
 
-function sort(){
-  if (_sort == "") {
-    asort(a)
-    _sort = 1
-  }
-}
+## Statistics Functions
 
+# Number of items, i.e. count
 function n(){
   if (_n == ""){
     _n = NR
@@ -31,6 +24,7 @@ function n(){
   return _n
 }
 
+# Sum
 function sum(){
   if (_sum == ""){
     for (i in a){
@@ -40,6 +34,7 @@ function sum(){
   return _sum
 }
 
+# Mean, i.e. average
 function mean(){
   if (_mean == ""){
     _mean = sum() / n()
@@ -47,6 +42,7 @@ function mean(){
   return _mean
 }
 
+# Minimum
 function min(){
   if (_min == ""){
     sort()
@@ -55,20 +51,24 @@ function min(){
   return _min
 }
 
+# Maximum
 function max(){
   if (_max == ""){
     sort()
-    _max = a[_n]
+    _max = a[n()]
   }
   return _max
 }
 
+# Range, i.e. max - min
 function range(){
-  if (_min == "") min()
-  if (_max == "") max()
-  _range = _max - _min
+  if (_range == ""){
+    _range = max() - min()
+  }
+  return _range
 }
 
+# Median
 function median(){
   if (_median == ""){
     if (n() % 2) {
@@ -80,50 +80,105 @@ function median(){
   return _median
 }
 
-function sumsq(){
-  if (_sumsq == ""){
+# Sum of Squares
+function sum_of_squares(){
+  if (_sum_of_squares == ""){
     for (i in a){
-      _sumsq += (a[i] - mean()) ** 2;
+      _sum_of_squares += (a[i] - mean()) ^ 2;
     }
   }
-  return _sumsq
+  return _sum_of_squares
 }
 
-function sd(){
-  if (_sd == ""){
-    _sd = sqrt(sumsq() / n())
+# Standard Deviation
+function standard_deviation(){
+  if (_standard_deviation == ""){
+    _standard_deviation = sqrt(sum_of_squares() / n())
   }
-  return _sd
+  return _standard_deviation
 }
 
-function cv(){
-  if (_cv == ""){
-    _cv = sd() / mean()
+# Coefficient of Variance
+function coefficient_of_variance(){
+  if (_coefficient_of_variance == ""){
+    _coefficient_of_variance = standard_deviation() / mean()
   }
-  return _cv
+  return _coefficient_of_variance
 }
 
-function all(){
-  n()
-  min()
-  max()
-  range()
-  sum()
-  mean()
-  median()
-  sumsq()
-  sd()
-  cv()
+## Helper Functions
+
+function sort(){
+  if (_sort == "") {
+    asort(a)
+    _sort = 1
+  }
+}
+
+function abs(value){
+  return (value < 0 ? -value : value)
+}
+
+## Processing Functions
+
+function parse_word(word){
+  if (word == "n")
+    return (n())
+  else if (word == "min")
+    return min()
+  else if (word == "max")
+    return max()
+  else if (word == "range")
+    return range()
+  else if (word == "sum")
+    return sum()
+  else if (word == "median")
+    return median()
+  else if (word == "mean")
+    return mean()
+  else if (word == "ss")
+    return sum_of_squares()
+  else if (word == "sd")
+    return standard_deviation()
+  else if (word == "cv")
+    return coefficient_of_variance()
+  else
+    return ""
+}
+
+function parse_words(words){
+  for (i in words){
+    word = words[i]
+    x = parse_word(word)
+    if (x != ""){
+      s = s " " word ": " x
+    }
+  }
+  return sub(/^ /,"",s)
+}
+
+function save_argv(){
+  for (i in ARGV){
+    argv[i] = ARGV[i]
+  }
 }
 
 function output(){
-  print "n:", _n, "min:", _min, "max:", _max, "range:", _range, "sum:", _sum, "median:", _median, "mean:", _mean, "sumsq:", _sumsq, "sd:", _sd, "cv:", _cv
+  print "n:", n(), "min:", min(), "max:", max(), "range:", range(), "sum:", sum(), "median:", median(), "mean:", mean(), "ss:", sum_of_squares(), "sd:", standard_deviation(), "cv:", coefficient_of_variance()
+}
+
+## Main
+
+BEGIN{
+  save_argv()
+  ARGC = 0
 }
 
 {
   a[NR] = $1
 }
+
 END{
-  all()
+  parse_words(argv)
   output()
-}'
+}' "$@"
