@@ -4,22 +4,24 @@ Statistics scripts that calculate based on lists of numbers.
 
 Example:
 
-    $ echo "1 2 4" | n-col-stats
-    count: 3 min: 1 max: 4 sum: 7 range: 3 median: 2 mean: 2.33333 ss: 4.66667 sd: 1.24722 cv: 0.534523
+    $ echo "1 2 4" | stats
+    count 3 min 1 max 4 sum 7 range 3 median 2 mean 2.33333 ss 4.66667 sd 1.24722 cv 0.534523
 
-There are specific scripts to calculating by column list or by row list:
+See the `stats` script for details and options.
+
+This repo also contains a bunch of simplified awk scripts to calculate on numbers:
 
   * `n-col-count`, `n-row-count`: Print the count, i.e. how many columns or rows.
   * `n-col-min`, `n-row-min`: Print the minimum number.
   * `n-col-max`, `n-row-max`: Print the maximum number.
-  * `n-col-range`, `n-row-range`: Print the range of the numbers, i.e. max - min.
+  * `n-col-range`, `n-row-range`: Print the range of the numbers.
   * `n-col-sum`, `n-row-sum`: Print the sum of the numbers.
   * `n-col-median`, `n-row-median`: Print the median of the numbers.
   * `n-col-mean`, `n-row-mean`: Print the mean of the numbers, i.e. the average.
-  * `n-col-ss`, `n-row-ss`: Print the sum of squares of the numbers.
-  * `n-col-sd`, `n-row-sd`: Print the standard deviation of the numbers.
-  * `n-col-cv`, `n-row-cv`: Print the coefficient of variance of the numbers, i.e. sd / mean.
-  * `n-col-all`, `n-row-all`: Print all of the above statistics of the numbers.
+  * `n-col-sum-of-squares`, `n-row-sum-of-squares`: Print the sum of squares of the numbers.
+  * `n-col-variance`, `n-row-variance`: Print the variance of the numbers.
+  * `n-col-standard-deviation`, `n-row-standard-deviation`: Print the standard deviation of the numbers.
+  * `n-col-coefficient-of-variance`, `n-row-coefficient-of-variance`: Print the coefficient of variance of the numbers.
 
 
 ## Examples

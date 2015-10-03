@@ -6,7 +6,7 @@ set -euf
 #
 # Example:
 #
-#     $ echo "1\n2\n4" | n-row-cv
+#     $ echo "1\n2\n4" | n-row-coefficient-of-variance
 #     0.534523
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
@@ -21,11 +21,12 @@ awk '{
 }
 END{
   n = NR
-  mean = sum/n
+  mean = sum / n
   for (x = 1; x <= n; x++){
-    ss += (a[x] - mean) ** 2;
+    diff += (a[x] - mean) ** 2
   }
-  sd = sqrt(ss/n)
-  cv = sd/mean
-  print cv
+  variance = diff / n
+  standard_deviation = sqrt(variance)
+  coefficient_of_variance = standard_deviation / mean
+  print coefficient_of_variance
 }'

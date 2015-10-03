@@ -6,7 +6,7 @@ set -euf
 #
 # Example:
 #
-#     $ echo "1\n2\n4" | n-row-sd
+#     $ echo "1\n2\n4" | n-row-standard-deviation
 #     1.24722
 #
 # Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
@@ -20,10 +20,12 @@ awk '{
   a[NR] = $1
 }
 END {
-  mean = sum/NR
+  n = NR
+  mean = sum / NR
   for (x = 1; x <= NR; x++){
-    ss += (a[x] - mean) ** 2;
+    diff += (a[x] - mean) ** 2
   }
-  sd = sqrt(ss/NR)
-  print sd
+  variance = diff / n
+  standard_deviation = sqrt(variance)
+  print standard_deviation
 }'
