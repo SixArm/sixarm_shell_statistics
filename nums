@@ -1,0 +1,1037 @@
+#!/bin/sh
+set -euf
+
+##
+# Statistics calculations for numbers.
+#
+# Examples:
+#
+#     $ echo "1 2 4" | nums --sum
+#     7
+#
+#     $ echo "1 2 4" | nums --min --max --mean --standard-deviation
+#     1 4 2 2.33333 1.24722
+#
+#     $ echo "3 2 1 3 2 1" | nums --sort --unique --output-csv
+#     1,2,3
+#
+# ## Options
+#
+# Functions:
+#
+#     --n                           The number of items.
+#     --count                       "
+#     --length                      "
+#     --minimum                     The minimum value.
+#     --min                         "
+#     --maximum                     The maximum value.
+#     --max                         "
+#     --range                       The range, which is maximum - minimum.
+#     --spread                      "
+#     --sum                         The sum.
+#     --total                       "
+#     --mean                        The arithmetic mean a.ka. average.
+#     --average                     "
+#     --median                      The median.
+#     --middle                      The middle value i.e. closest to the mean.
+#     --mid                         "
+#     --mode                        The first mode or NAN.
+#     --modes                       All modes or NAN.
+#     --variance                    The variance.
+#     --var                         "
+#     --sum-of-squares              The sum of squares (SS).
+#     --sum2                        "
+#     --ss                          "
+#     --standard-deviation          The standard deviation (SD).
+#     --stdev                       "
+#     --sd                          "
+#     --coefficient-of-variance     The coefficient of variance (CV).
+#     --covar                       "
+#     --cv                          "
+#
+# Filters:
+#
+#     --unique                      Effect unique numbers. Nickname of --effect-unique.
+#     --effect-unique               Effect unique numbers. Example: 1 2 2 3 => 1 2 3.
+#     --select-unique               Select unique numbers. Example: 1 2 2 3 => 1 3.
+#     --reject-unique               Reject unique numbers. Example: 1 2 2 3 => 2.
+#     --sort                        Sort ascending. Nickname of --sort-asc.
+#     --sort-asc                    Sort ascending. Example: 3 1 2 => 1 2 3.
+#     --sort-desc                   Sort descending. Example: 3 1 2 => 3 2 1.
+#
+# Input:
+#
+#     --input-fields    The input uses fields, one number per field. This produces one output per record.
+#     --input-records   The input uses records, one number per record. This produces one output overall.
+#     --input-is-sorted The input is already sorted ascending. Optimizes `median`, `minimum`, `maximum`.
+#     --input-is-unique The input is already unique. Optimizes `unique`, `select-unique`, `reject-unique`.
+#
+# Output:
+#
+#     --output-label     Label each output item, such as "sum 123". Default is unlabeled, such as "123".
+#     --output-csv       Output comma-separated values. [#TODO Default is awk field separator]
+#     --output-tsv       Output tab-separated values. [#TODO Default is awk field separator]
+#
+# Notation:
+#
+#   * If a value is unknown, or not a number, then it will print as "?".
+#
+# ## Implementation
+#
+# Each statistics function takes an array of numbers and an array of options.
+#
+# Options examples:
+#
+#   * `options["unique"]` is boolean 0|1 if the list numbers are unique.
+#   * `options["sorted"]` is boolean 0|1 if the list numbers are sorted.
+#   * `options["sum"]` is a memoization cache of the `sum` function value.
+#
+# Function example:
+#
+#     function sum(a, options,  x, i) {  # typical parameters
+#       if (!("sum" in options)) {       # is this already calculated?
+#         x = 0                          # explict zero
+#         for (i in a) {                 # iterate
+#           x += a[i]                    # add
+#         }
+#         options["sum"] = x             # set memo
+#       }
+#       return options["sum"]            # return memo
+#     }
+#
+# Conventions:
+#
+#   * Use the `awk` convention of two spaces to separate the function
+#     declaration's list of input variables from internal variables.
+#
+#   * Check if the array has a key that is the same name as the function.
+#     If the key exists, then skip any calculation; simply return the value.
+#     the value is a previously-calculated result a.k.a. a memo, a.k.a. a cache.
+#
+#   * Explicitly set all internal variables because this helps
+#     catch bugs and prevent them, and tends to be easier to read.
+#
+#   * After the loop, we cache the result in the array by using the
+#     options array and a key that is the same name as the function.
+#
+#   * We return the cache value, rather than the temp loop variable,
+#     because in our experience this helps prevent bugs.
+#
+#   * Use POSIX when possible. For example write `x ** 2` not `x ^ 2`.
+#
+# ## Tracking
+#
+# Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL, BSD, MIT
+# Created: 2015-03-28
+# Updated: 2015-10-02
+# Version: 2.1.0
+##
+
+awk '
+
+## Debugging Functions
+
+function info(msg) {
+  print msg
+}
+
+function error(msg) {
+  print msg | "cat 1>&2"  # POSIX compatible
+}
+
+## Statistics Functions
+
+# Number of items, a.k.a. count, length.
+#
+# Example:
+#
+#     1 2 4 => 3
+#
+function n(a, options) {
+  if (!("n" in options)) {
+    options["n"] = len(a)
+  }
+  return options["n"]
+}
+
+# Minimum, a.k.a. min.
+#
+# Example:
+#
+#     1 2 4 => 1
+#
+function minimum(a, options,  _minimum, i) {
+  if (!("minimum" in options)) {
+    if ("sorted" in options && options["sorted"] == TRUE) {
+      options["minimum"] = first(a)
+    } else {
+      options["minimum"] = minimum_via_scan(a)
+    }
+  }
+  return options["minimum"]
+}
+
+# Maximum, a.k.a. max.
+#
+# Example:
+#
+#     1 2 4 => 4
+#
+function maximum(a, options,  _maximum, i) {
+  if (!("maximum" in options)) {
+    if ("sorted" in options && options["sorted"] == TRUE) {
+      options["maximum"] = last_via_options(a, options)
+    } else {
+      options["maximum"] = maximum_via_scan(a)
+    }
+  }
+  return options["maximum"]
+}
+
+# Range, a.k.a. spread.
+#
+# Example:
+#
+#     1 2 4 => 3
+#
+function range(a, options) {
+  if (!("range" in options)) {
+    options["range"] = maximum(a, options) - minimum(a, options)
+  }
+  return options["range"]
+}
+
+# Sum, a.k.a. total.
+#
+# Example:
+#
+#     1 2 4 => 7
+#
+function sum(a, options, _sum, i) {
+  if (!("sum" in options)) {
+    _sum = 0
+    for (i in a) {
+      _sum += a[i]
+    }
+    options["sum"] = _sum
+  }
+  return options["sum"]
+}
+
+# Mean, a.k.a. arithmetic mean, average.
+#
+# Example:
+#
+#     1 2 4 => 2.33333
+#
+function mean(a, options) {
+  if (!("mean" in options)) {
+    options["mean"] = sum(a) / n(a)
+  }
+  return options["mean"]
+}
+
+# Median.
+#
+# Example:
+#
+#     1 2 4 => 2
+#     1 2 4 99 => 3
+#
+function median(a, options,  _n) {
+  if (!("median" in options)) {
+    sort_in_place(a, options)
+    _n = n(a, options)
+    if (_n % 2) {
+      options["median"] = a[(_n + 1) / 2]
+    } else {
+      options["median"] = a[(_n / 2)] + (a[(_n / 2) + 1] / 2.0)
+    }
+  }
+  return options["median"]
+}
+
+# Mode: get the first mode; if there is none, return NAN.
+#
+# Examples:
+#
+#     1 2 2 3 => 2
+#     1 2 2 3 3 => 2
+#     1 2 3 => "?"
+#
+function mode(a, options,  _modes) {
+  if (!("mode" in options)) {
+    modes(a, options, _modes)
+    if (empty(_modes)) {
+      options["mode"] = NAN
+    } else {
+      options["mode"] = _modes[1]
+    }
+  }
+  return options["mode"]
+}
+
+# Modes.
+#
+# The modes are:
+#
+#   * The values that appear most often in a set of data.
+#   * If values appear the same number of times, there are multiple modes.
+#   * If each value occurs only once, then there are no modes.
+#
+# Examples:
+#
+#     1 2 2 3 => 2
+#     1 2 2 3 3 => 2 3
+#     1 2 3 => empty array
+#
+function modes(a, options, dest,  _seen, _max, i, j, s) {
+  if (!("modes" in options)) {
+     split("", dest)
+    for (i in a) _seen[a[i]]++
+    _max = maximum_via_scan(_seen)
+    if (_max > 1) {
+      for (i in _seen) {
+        if (_seen[i] == _max) {
+          dest[++j] = i
+        }
+      }
+      options["modes"] = join(dest, " ")
+    } else {
+      options["modes"] = NAN
+    }
+  }
+  return options["modes"]
+}
+
+# Middle, i.e. the value closest to the mean.
+#
+# Example:
+#
+#     1 2 4 => 2
+#
+function middle(a, options,  _middle, _diff, i) {
+  if (!("middle" in options)) {
+    options["middle"] = closest_via_options(a, options, mean(a, options))
+  }
+  return options["middle"]
+}
+
+# Sum of Squares, a.k.a. SS.
+#
+# Example:
+#
+#     1 2 4 => 4.66667
+#
+function sum_of_squares(a, options,  _sum, _mean, i) {
+  if (!("sum_of_squares" in options)) {
+    _sum = 0
+    _mean = mean(a)
+    for (i in a) {
+      _sum += (a[i] - _mean) ** 2
+    }
+    options["sum_of_squares"] = _sum
+  }
+  return options["sum_of_squares"]
+}
+
+# Variance
+#
+# Example:
+#
+#     1 2 4 => 1.55556
+#
+function variance(a, options,  _n, _mean, _diff, i) {
+  if (!("variance" in options)) {
+    _n = n(a)
+    _mean = mean(a)
+    for (i in a){
+      _diff += (a[i] - _mean) ** 2
+    }
+    options["variance"] = _diff / _n
+  }
+  return options["variance"]
+}
+
+# Standard Deviation, a.k.a. SD.
+#
+# Example:
+#
+#     1 2 4 => 1.24722
+#
+function standard_deviation(a, options) {
+  if (!("standard_deviation" in options)) {
+    options["standard_deviation"] = sqrt(variance(a, options))
+  }
+  return options["standard_deviation"]
+}
+
+# Coefficient of Variance, a.k.a. CV.
+#
+# Example:
+#
+#     1 2 4 => 0.534522
+#
+function coefficient_of_variance(a, options) {
+  if (!("coefficient_of_variance" in options)) {
+    options["coefficient_of_variance"] = standard_deviation(a, options) / mean(a, options)
+  }
+  return options["coefficient_of_variance"]
+}
+
+## Array Functions
+
+# Dump an array, suitable for debugging.
+#
+# Example:
+#
+#     dump(a)
+#     +++
+#     1 a
+#     2 b
+#     3 d
+#     ---
+#
+function dump(a) {
+  print "+++"
+  for (k in a) {
+    print k, a[k]
+  }
+  print "---"
+}
+
+# Is an array empty?
+#
+# Example:
+#
+#   split("", a)
+#   empty(a) => TRUE
+#
+# This is POSIX compatible.
+#
+function empty(a,  i) {
+  for (i in a) return 0
+  return 1
+}
+
+
+# Join an array to a string, with a given separator string.
+#
+# Example:
+#
+#     join(1 2 4, ",") => "1,2,4"
+#
+function join(a, sep,  s, i, first) {
+  s = ""
+  append = FALSE
+  for (i in a) {
+    if (append) {
+      s = s sep a[i]
+    } else {
+      s = a[i]
+      append = TRUE
+    }
+  }
+  return s
+}
+
+# Length of an array.
+#
+# Example:
+#
+#     len(1 2 4) => 3
+#
+# TODO: Optimize - consider using `gawk` and its `length` function.
+#
+function len(a,  i, k) {
+  for (i in a) k++
+  return k
+}
+
+# Return the first item in an array.
+#
+# Example:
+#
+#     first(1 2 4) => 1
+#
+function first(a) {
+  return a[1]
+}
+
+# Get the last item in an array, by using the `length` function.
+#
+# Example:
+#
+#     last_via_length(1 2 4) => 4
+#
+function last_via_length(a) {
+  return a[length(a)]
+}
+
+# Get the last item in an array, by using the `options["n"]` value.
+#
+# Example:
+#
+#     last_via_options(1 2 4, options) => 4
+#
+function last_via_options(a, options) {
+  return a[options["n"]]
+}
+
+# Get the minimum value, by doing a scan of the entire array.
+#
+# Example:
+#
+#     minimum_via_scan(1 2 4) => 4
+#
+function minimum_via_scan(a,  _minimum) {
+  _minimum = a[1]
+  for (i in a) if (a[i] < _minimum) _minimum = a[i]
+  return _minimum
+}
+
+# Get the maxmimum value, by doing a scan of the entire array.
+#
+# Example:
+#
+#     maximum_via_scan(1 2 4) => 4
+#
+function maximum_via_scan(a,  _maximum) {
+  _maximum = a[1]
+  for (i in a) if (a[i] > _maximum) _maximum = a[i]
+  return _maximum
+}
+
+# Get the closest item value to a target value in an array.
+#
+# Example:
+#
+#    a = 1 2 4
+#    target = 2.5
+#    closest(a, options, target) => 2
+#
+# If multiple values are equidistant to the target,
+# then return the earliest value.
+#
+function closest_via_options(a, options, target, _closest_value, _closest_delta, _delta, x, i) {
+  #TODO optimize when the array is already sorted,
+  # by using quicksort or similar divide-and-conquer.
+  _closest_value = first(a)
+  _closest_delta = abs(_closest_delta - target)
+  for (i in a) {
+    _delta = abs(a[i] - target)
+    if (_delta < _closest_delta) {
+      _closest_value = a[i]
+      _closest_delta = _delta
+    }
+  }
+  return _closest_value
+}
+
+# Push one item on the array stack, by using the `length` function.
+#
+# Example:
+#
+#     a = 1 2
+#     push_via_length(a, 4)
+#     => a == 1 2 4
+#
+function push_via_length(a, item) {
+  a[length(a)+1] = item
+}
+
+# Push one item on the array stack, by using the `options["n"]` value.
+#
+#    a = 1 2
+#    push_via_options(a, options, 4)
+#    => a == 1 2 4
+#
+function push_via_options(a, options, item) {
+  a[++options["n"]] = item
+}
+
+# Push multiple items on the array stack, by using the `length` function.
+#
+# Example:
+#
+#     a = 1 2
+#     b = 4 8
+#     pushes_via_length(a, b)
+#     => a == 1 2 4 8
+#
+function pushes_via_length(a, items, _n, _i) {
+  _n = length(a)
+  for (_i in items) {
+    a[++_n] = items[_i]
+  }
+}
+
+# Push multiple items on the array stack, by using the `options["n"]` value.
+#
+#    a = 1 2
+#    b = 4 8
+#    pushes_via_options(a, options, b)
+#    => a == 1 2 4 8
+#
+function pushes_via_options(a, options, items, _n, _i) {
+  _n = options["n"]
+  for (_i in items) {
+    a[++_n] = items[_i]
+  }
+  options["n"] = _n
+}
+
+# Pop one item of the array stack, by using the `length` function.
+#
+# Example:
+#
+#     a = 1 2 4
+#     pop_via_length(a)
+#     => 4
+#     => a == 1 2
+#
+# If the array is empty, return "".
+#
+function pop_via_length(a, _x, _n) {
+  _n = length(a)
+  if (_n) {
+    _x = a[_n]
+    delete a[_n]
+    return x
+  } else {
+    return ""
+  }
+}
+
+# Pop one item of the array stack, by using the `options["n"]` value.
+#
+# Example:
+#
+#     a = 1 2 4
+#     pop_via_options(a, options)
+#     => 4
+#     => a == 1 2
+#
+# If the array is empty, return "".
+#
+function pop_via_options(a, options, _x) {
+  _n = options["n"]
+  if (_n) {
+    x = a[_n]
+    delete a[_n]
+    options["n"]--
+    return x
+  } else {
+    return ""
+  }
+}
+
+# Sort an array in place.
+#
+# Example:
+#
+#     a = 3 1 2
+#     sort_in_place(a, options)
+#     => a == 1 2 3
+#
+# Options:
+#
+#    * `options["sorted"]` means the array is already sorted.
+#
+# Caution: This implementation requires the `asort` function,
+# which we believe is available in current `gawk` implementations,
+# but may not be POSIX-compliant.
+#
+# TODO: Research if `asort` is POSIX or if there are alternatives.
+#
+function sort_in_place(a, options) {
+  if (options["sorted"] != TRUE) {
+    asort(a)
+    options["sorted"] = TRUE
+  }
+}
+
+# Effect unique numbers, by doing in-place destructive logic.
+#
+# Example:
+#
+#     a = 1 2 2 3
+#     effect_unique_in_place(a, options)
+#     => a == 1 2 3
+#
+# Options:
+#
+#   * `options["unique"]` means the array is already unique,
+#     which means the function will be skipped.
+#
+# TODO: Optimize.
+function effect_unique_in_place(a, options, _dest, _seen, i) {
+  if (options["unique"] != TRUE) {
+    for (i in a) _seen[a[i]] == TRUE
+    for (i in _seen) _dest[++j] = i
+    a = _dest
+    options["unique"] = TRUE
+  }
+}
+
+# Select unique numbers, by doing in-place destructive logic.
+#
+# Example:
+#
+#     a = 1 2 2 3
+#     select_unique_in_place(a, options)
+#     => a == 1 3
+#
+# Options:
+#
+#   * `options["unique"]` means the array is already unique,
+#     which means the function will be skipped.
+#
+# TODO: Optimize.
+#
+function select_unique_in_place(a, options, _dest, _seen, i) {
+  if (options["unique"] != TRUE) {
+    for (i in a) _seen[a[i]]++
+    for (i in _seen) if (_seen[i] == 1) dest[++j] = i
+    a = _dest
+    options["unique"] = TRUE
+  }
+}
+
+# Reject unique numbers, by doing in-place destructive logic.
+#
+# Example:
+#
+#     a = 1 2 2 3
+#     reject_unique_in_place(a, options)
+#     => a == 2
+#
+# Options:
+#
+#   * `options["unique"]` means the array is already unique,
+#      which means this function will reject all the numbers.
+#
+# TODO: Memoize.
+#
+function reject_unique_in_place(a, options, _dest, _seen, i) {
+  if (options["unique"] == TRUE) {
+    split("", a)
+  } else {
+    for (i in a) _seen[a[i]]++
+    for (i in _seen) if (_seen[i] != 1) _dest[++j] = i
+    a = _dest
+  }
+}
+
+## Math Functions
+
+# Absolute value.
+#
+# Example:
+#
+#    abs(-1) => 1
+#
+function abs(value) {
+  return (value < 0 ? -value : value)
+}
+
+## Helper functions
+
+# Ready the global arrays that store the numbers and options.
+#
+# This clears the arrays, then sets the numbers count to 0.
+#
+function ready() {
+  split("", __a)
+  split("", __options)
+  __options["n"] = 0
+}
+
+## Word Functions
+
+# Call this function for each option word a.k.a. flag,
+# before any calculation happens and any work happens.
+#
+# This function must only set variables and options.
+# This function must NOT do any calculations, work, etc.
+#
+# Example:
+#
+#     word_to_setup("median")
+#     => options["sort"] = "?" (which means a sort is needed)
+#
+# TODO optimize, such as by creating a word lookup, or init functions, etc.
+#
+function word_to_setup(a, options, word) {
+  if (word == "input-fields")
+    _calculate_via = "fields"
+  else if (word == "input-records")
+    _calculate_via == "records"
+  else if (word == "input-is-sorted")
+    options["sorted"] = TRUE
+  else if (word == "input-is-unique")
+    options["unique"] = TRUE
+  else if (word == "output-label")
+    _output_label = TRUE
+  else if (word == "output-csv")
+    _output_field_join = ","
+  else if (word == "output-tsv")
+    _output_field_join = "\t"
+  else if (word == "median")
+    options["sort"] = "?"
+  else if (word == "unique")
+    options["unique"] = "?"
+  else
+    return ""
+}
+
+# Call this function for each option word a.k.a. flag,
+# when it is time do calculations, work, etc.
+#
+# Example:
+#
+#     a = 1 2 4
+#     options = []
+#     word_to_function(a, options, "sum")
+#     => 7 (by calling the `sum` function)
+#
+# Note: this implementation uses if..else instead of
+# any switch or case, because we want POSIX usability.
+#
+# TODO: Is there a way to shorten this function,
+# perhaps by reflection on the word and function name?
+#
+function word_to_function(a, options, word) {
+  if (word == "n")
+    return (n(a, options))
+  else if (word == "minimum")
+    return minimum(a, options)
+  else if (word == "maximum")
+    return maximum(a, options)
+  else if (word == "range")
+    return range(a, options)
+  else if (word == "sum")
+    return sum(a, options)
+  else if (word == "median")
+    return median(a, options)
+  else if (word == "mean")
+    return mean(a, options)
+  else if (word == "middle")
+    return middle(a, options)
+  else if (word == "mode")
+    return mode(a, options)
+  else if (word == "modes")
+    return modes(a, options)
+  else if (word == "sum-of-squares")
+    return sum_of_squares(a, options)
+  else if (word == "variance")
+    return variance(a, options)
+  else if (word == "standard-deviation")
+    return standard_deviation(a, options)
+  else if (word == "coefficient-of-variance")
+    return coefficient_of_variance(a, options)
+  else
+    return ""
+}
+
+# Given a word, return the result as a string.
+#
+# Example:
+#
+#     a = 1 2 4
+#     options = []
+#     word_to_s(a, options, "sum")
+#     => "7"
+#
+# The string has various settings:
+#
+#   * `_output_field_prefix` is at the start of the string.
+#   * `_output_field_infix` is between the label and value.
+#   * `_output_field_suffix` is at the end of the string.
+#
+# Example:
+#
+#     _output_label = TRUE
+#     _output_field_prefix = "<"
+#     _output_field_infix  = ":"
+#     _output_field_suffix = ">"
+#     a = 1 2 4
+#     options = []
+#     word_to_s(a, options, "sum")
+#     => "<sum:7>"
+#
+function word_to_s(a, options, word,  x, s) {
+  if (!__word_output[word]) return ""
+  x = word_to_function(a, options, word)
+  if (_output_label) {
+    s = "" _output_field_prefix word _output_field_infix x _output_field_suffix
+  } else {
+    s = "" x
+  }
+  return s
+}
+
+function words_to_s(a, options, words,  word, i, s, s2) {
+  s = ""
+  for (i in words) {
+    word = words[i]
+    if (__word_output[word]) {
+      x = word_to_s(a, options, word)
+      s = s x _output_field_join
+    }
+  }
+  s = substr(s, 1, length(s) - length(_output_field_join))
+  return s
+}
+
+## Filtering
+
+function filters() {
+  if ("effect-unique" in options) effect_unique_in_place(a, options)
+  if ("select-unique" in options) select_unique_in_place(a, options)
+  if ("reject-unique" in options) reject_unique_in_place(a, options)
+  if ("sort" in options) sort_in_place(a, options)
+}
+
+## Argv Functions
+
+function parse_argv(  i, word) {
+  for (i in ARGV) {
+    #TODO optimize?
+    if (ARGV[i] ~ /^--(input-fields|input-records|input-is-sorted|input-is-unique|output-label|output-csv|output-tsv|n|count|length|minimum|min|maximum|max|range|spread|sum|total|median|mean|average|middle|mid|mode|modes|sum-of-squares|ss|variance|var|standard-deviation|sd|std|coefficient-of-variance|covar|cv|unique|effect-unique|select-unique|reject-unique|sort|sort-asc|sort-desc)/) {
+      word = ARGV[i]
+      delete ARGV[i]
+      sub(/^--/, "", word)
+      word = __word_alias[word]
+      push_via_length(__words, word)
+      word_to_setup(__a, __options, word)
+    }
+  }
+}
+
+function save_argv() {
+  for (i in ARGV) {
+    argv[i] = ARGV[i]
+  }
+}
+
+## Output Functions
+
+function output() {
+  filters()
+  print words_to_s(__a, __options, __words)
+}
+
+## Initialization Functions
+
+function init() {
+  init_constants()
+  init_word_alias()
+  init_word_output()
+  init_words()
+  _output_field_prefix = ""
+  _output_field_infix = " "
+  _output_field_suffix = ""
+  _output_field_join = " "
+  _calculate_via = "all" # enum "all", "fields", "records"
+}
+
+# Initialize the `__alias` lookup array.
+#
+# The first item is canonical i.e. is the function name, not a synonym.
+#
+function init_word_alias() {
+  __word_alias["n"] = __word_alias["count"] = __word_alias["length"] = "n"
+  __word_alias["minimum"] = __word_alias["min"] = "minimum"
+  __word_alias["maximum"] = __word_alias["max"] = "maximum"
+  __word_alias["range"] = __word_alias["spread"] = "range"
+  __word_alias["sum"] = __word_alias["total"] = "sum"
+  __word_alias["median"] = "median"
+  __word_alias["mean"] = __word_alias["average"] = "mean"
+  __word_alias["middle"] = __word_alias["mid"] = "middle"
+  __word_alias["mode"] = "mode"
+  __word_alias["modes"] = "modes"
+  __word_alias["sum-of-squares"] = __word_alias["ss"] = __word_alias["sum2"] = "sum-of-squares"
+  __word_alias["variance"] = __word_alias["var"] = "variance"
+  __word_alias["standard-deviation"] = __word_alias["stdev"] = __word_alias["sd"] = "standard-deviation"
+  __word_alias["coefficient-of-variance"] = __word_alias["covar"] = __word_alias["cv"] = "coefficient-of-variance"
+  __word_alias["effect-unique"] = __word_alias["unique"] = "effect-unique"
+  __word_alias["select-unique"] = "select-unique"
+  __word_alias["reject-unique"] = "reject-unique"
+  __word_alias["sort-asc"] = __word_alias["sort"] = "sort-asc"
+  __word_alias["sort-desc"] = "sort-desc"
+  __word_alias["output-label"] = "output-label"
+  __word_alias["output-csv"] = "output-csv"
+  __word_alias["output-tsv"] = "output-tsv"
+}
+
+# Initialize the `__word_output` lookup array.
+#
+function init_word_output() {
+  __word_output["n"] = TRUE
+  __word_output["minimum"] = TRUE
+  __word_output["maximum"] = TRUE
+  __word_output["range"] = TRUE
+  __word_output["sum"] = TRUE
+  __word_output["median"] = TRUE
+  __word_output["mean"] = TRUE
+  __word_output["middle"] = TRUE
+  __word_output["mode"] = TRUE
+  __word_output["modes"] = TRUE
+  __word_output["sum-of-squares"] = TRUE
+  __word_output["variance"] = TRUE
+  __word_output["standard-deviation"] = TRUE
+  __word_output["coefficient-of-variance"] = TRUE
+  __word_output["effect-unique"] = TRUE
+  __word_output["select-unique"] = TRUE
+  __word_output["reject-unique"] = TRUE
+}
+
+function init_constants() {
+  FALSE = 0
+  TRUE = 1
+  NAN = "NAN"
+}
+
+function init_words() {
+  split("", __words)
+}
+
+## Main
+
+BEGIN{
+  init()
+  save_argv()
+  parse_argv()
+  ready()
+}
+
+{
+  if (_calculate_via == "all") {
+    split($0, fields)
+    pushes_via_options(__a, __options, fields)
+  }
+  else if (_calculate_via == "fields") {
+    ready()
+    split($0, fields)
+    pushes_via_options(__a, __options, fields)
+    output()
+  }
+  else if (_calculate_via == "records") {
+    __a[NR] = $1
+  }
+}
+
+END{
+  if (_calculate_via == "all") {
+    output()
+  }
+  else if (_calculate_via == "fields") {
+    #noop
+  }
+  else if (_calculate_via == "records") {
+    options["n"] = NR
+    output()
+  }
+}' "$@"
