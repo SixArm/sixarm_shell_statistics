@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 assert_eq() {
   expect="$1"
@@ -40,9 +40,9 @@ x=$(echo "1 2 4 4"     | ./nums --mode)                          && assert_eq 4 
 x=$(echo "1 2 2 4 4"   | ./nums --mode)                          && assert_eq 2 "$x" "mode with bimodal"
 x=$(echo "1 2 4"       | ./nums --mode)                          && assert_eq "NAN" "$x" "mode with nonmodal"
 
-x=$(echo "1 2 4 4"     | ./nums --modes)                         && assert_eq 4 "$x" "modes with unimodal"
-x=$(echo "1 2 2 4 4"   | ./nums --modes)                         && assert_eq "2 4" "$x" "mode with bimodal"
-x=$(echo "1 2 4"       | ./nums --modes)                         && assert_eq "NAN" "$x" "mode with nonmodal"
+x=$(echo "1 2 4 4"     | ./nums --modes)                         && assert_eq "4" "$x" "modes with unimodal"
+x=$(echo "1 2 2 4 4"   | ./nums --modes)                         && assert_eq "2 4" "$x" "modes with bimodal"
+x=$(echo "1 2 4"       | ./nums --modes)                         && assert_eq "NAN" "$x" "modes with nonmodal"
 
 x=$(echo "1 2 4"       | ./nums --ss)                            && assert_eq 4.66667 "$x" "ss"
 x=$(echo "1 2 4"       | ./nums --sum2)                          && assert_eq 4.66667 "$x" "sum2"
