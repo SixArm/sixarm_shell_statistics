@@ -51,26 +51,51 @@ set -euf
 #
 # Filters:
 #
-#     --unique                      Effect unique numbers. Nickname of --effect-unique.
-#     --effect-unique               Effect unique numbers. Example: 1 2 2 3 => 1 2 3.
-#     --select-unique               Select unique numbers. Example: 1 2 2 3 => 1 3.
-#     --reject-unique               Reject unique numbers. Example: 1 2 2 3 => 2.
-#     --sort                        Sort ascending. Nickname of --sort-asc.
-#     --sort-asc                    Sort ascending. Example: 3 1 2 => 1 2 3.
-#     --sort-desc                   Sort descending. Example: 3 1 2 => 3 2 1.
+#     --unique                      Effect unique numbers.
+#                                   Nickname of --effect-unique.
+#
+#     --effect-unique               Effect unique numbers.
+#                                   Example: 1 2 2 3 => 1 2 3.
+#
+#     --select-unique               Select unique numbers.
+#                                   Example: 1 2 2 3 => 1 3.
+#
+#     --reject-unique               Reject unique numbers.
+#                                   Example: 1 2 2 3 => 2.
+#
+#     --sort                        Sort ascending.
+#                                   Nickname of --sort-asc.
+#
+#     --sort-asc                    Sort ascending.
+#                                   Example: 3 1 2 => 1 2 3.
+#
+#     --sort-desc                   Sort descending.
+#                                   Example: 3 1 2 => 3 2 1.
 #
 # Input:
 #
-#     --input-fields    The input uses fields, one number per field. This produces one output per record.
-#     --input-records   The input uses records, one number per record. This produces one output overall.
-#     --input-is-sorted The input is already sorted ascending. Optimizes `median`, `minimum`, `maximum`.
-#     --input-is-unique The input is already unique. Optimizes `unique`, `select-unique`, `reject-unique`.
+#     --input-fields                The input uses fields, one number per field.
+#                                   The script will produce one output per record.
+#
+#     --input-records               The input uses records, one number per record.
+#                                   The script will produce one output overall.
+#
+#     --input-is-sorted             The input is already sorted ascending.
+#                                   Optimizes `median`, `minimum`, `maximum`, etc.
+#
+#     --input-is-unique             The input is already unique.
+#                                   Optimizes `unique`, `select-unique`, `reject-unique`, etc.
 #
 # Output:
 #
-#     --output-label     Label each output item, such as "sum 123". Default is unlabeled, such as "123".
-#     --output-csv       Output comma-separated values. [#TODO Default is awk field separator]
-#     --output-tsv       Output tab-separated values. [#TODO Default is awk field separator]
+#     --output-label                Label each output item, such as "sum 123".
+#                                   Default is unlabeled, such as "123".
+#
+#     --output-csv                  Output comma-separated values.
+#                                   [#TODO Default is awk field separator]
+#
+#     --output-tsv                  Output tab-separated values.
+#                                   [#TODO Default is awk field separator]
 #
 # Notation:
 #
