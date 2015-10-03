@@ -1,0 +1,32 @@
+#!/bin/sh
+set -euf
+
+##
+# Given a list of numbers, calculate the variance.
+#
+# Example:
+#
+#     $ echo "1 2 4" | n-col-variance
+#     1.55556
+#
+# Author: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL
+# Updated: 2015-09-25
+# Version: 1.0.1
+##
+
+awk '{
+  n = NF
+  sum = 0
+  for (i = 1; i <= n; i++) {
+    sum += $i
+    sum_of_squares += $i ** 2
+  }
+  mean = sum / n
+  diff = 0
+  for (i = 1; i <= n; i++){
+    diff += ($i - mean) ** 2;
+  }
+  variance = diff / n
+  print variance
+}'
