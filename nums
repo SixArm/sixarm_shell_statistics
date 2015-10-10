@@ -4,102 +4,227 @@ set -euf
 ##
 # NUMS: Numbers Utilties for Mathematics and Statistics.
 #
-# Examples:
+# The goal is to provide numbers utilities for common needs,
+# using common shell capabilities on common systems.
 #
-#     $ echo "1 2 4" | nums --sum
+# Syntax:
+#
+#     nums [ options ] [ file ... ]
+#
+# NUMS mathematics examples:
+#
+#     $ echo "1 2 4" | nums count
+#     3
+#
+#     $ echo "1 2 4" | nums min max range sum
+#     1 4 3 7
+#
+# NUMS statistics examples:
+#
+#     $ echo "1 2 4" | nums median mean
+#     2 2.33333
+#
+#     $ echo "1 2 4" | nums variance standard-deviation
+#     1.55556 1.24722
+#
+# NUMS filter examples: #TODO
+#
+#     $ echo "3 1 2" | nums sort
+#     1 2 3
+#
+#     $ echo "1 2 2 3 4 4" | nums unique
+#     1 2 3 4
+#
+# NUMS knows to skip items that are not numbers: #TODO
+#
+#     $ echo "a 1 b 2 c 4" | nums count
+#     3
+#
+# NUMS input optimization examples: #TODO
+#
+#     $ echo "1 2 3 4" | nums input-is-ascending max
+#     4
+#
+#     $ echo "1 2 3 4" | nums input-is-linear mean
+#     2.5
+#
+#     $ echo "1 2 3 4" | nums input-is-sorted median
+#     2.5
+#
+#     $ echo "1 2 3 4" | nums input-is-unique mode
+#     ?
+#
+# NUMS input can use stdin or files:
+#
+#     $ echo "1 2 4" | nums sum
 #     7
 #
-#     $ echo "1 2 4" | nums --median --mean --standard-deviation
-#     2 2.33333 1.24722
+#     $ echo "1 2 4" > text.txt
+#     $ nums sum test.txt
+#     7
 #
-#     $ echo "3 2 1 3 2 1" | nums --sort --unique --output-csv
-#     1,2,3
+# NUMS output examples:
+#
+#     $ echo "1 2 4" | nums all output-csv
+#     1,2,4
+#
+#     $ echo "1 2 4" | nums all output-tsv
+#     1\t2\t4
+#
 #
 # ## Options
 #
-# Functions:
+# Numbers Options:
 #
-#     --n                           The number of items.
-#     --count                       "
-#     --length                      "
-#     --minimum                     The minimum value.
-#     --min                         "
-#     --maximum                     The maximum value.
-#     --max                         "
-#     --range                       The range, which is maximum - minimum.
-#     --spread                      "
-#     --sum                         The sum.
-#     --total                       "
-#     --mean                        The arithmetic mean a.ka. average.
-#     --average                     "
-#     --median                      The median.
-#     --middle                      The middle value i.e. closest to the mean.
-#     --mid                         "
-#     --mode                        The first mode or NAN.
-#     --modes                       All modes or NAN.
-#     --variance                    The variance.
-#     --var                         "
-#     --sum-of-squares              The sum of squares (SS).
-#     --sum2                        "
-#     --ss                          "
-#     --standard-deviation          The standard deviation (SD).
-#     --stdev                       "
-#     --sd                          "
-#     --coefficient-of-variance     The coefficient of variance (CV).
-#     --covar                       "
-#     --cv                          "
+#     all                         All the items.
+#     first                       The first item.
+#     last                        The last item.
+#
+#     n                           The number of items.
+#     count                       "
+#     length                      "
+#     size                        "
+#
+#     minimum                     The minimum value.
+#     min                         "
+#
+#     maximum                     The maximum value.
+#     max                         "
+#
+#     range                       The range, which is maximum - minimum.
+#     spread                      "
+#
+#     sum                         The sum.
+#     total                       "
+#
+# Statisics:
+#
+#     mean                        The arithmetic mean a.ka. average.
+#     average                     "
+#
+#     median                      The median.
+#     med                         "
+#
+#     middle                      The middle value i.e. closest to the mean.
+#     mid                         "
+#
+#     mode                        The first mode or NAN.
+#     modes                       All modes or NAN.
+#
+#     variance                    The variance.
+#     var                         "
+#
+#     sum-of-squares              The sum of squares (SS).
+#     sum2                        "
+#     ss                          "
+#
+#     standard-deviation          The standard deviation (SD).
+#     stdev                       "
+#     sd                          "
+#
+#     coefficient-of-variance     The coefficient of variance (CV).
+#     covar                       "
+#     cv                          "
+#
+# Counts:
 #
 # Filters:
 #
-#     --unique                      Effect unique numbers.
-#                                   Nickname of --effect-unique.
+#     unique                      Effect unique numbers.
+#                                   Nickname of effect-unique.
 #
-#     --effect-unique               Effect unique numbers.
+#     effect-unique               Effect unique numbers.
 #                                   Example: 1 2 2 3 => 1 2 3.
 #
-#     --select-unique               Select unique numbers.
+#     select-unique               Select unique numbers.
 #                                   Example: 1 2 2 3 => 1 3.
 #
-#     --reject-unique               Reject unique numbers.
+#     reject-unique               Reject unique numbers.
 #                                   Example: 1 2 2 3 => 2.
 #
-#     --sort                        Sort ascending.
-#                                   Nickname of --sort-asc.
+#     sort                        Sort ascending.
+#                                   Nickname of sort-asc.
 #
-#     --sort-asc                    Sort ascending.
+#     sort-asc                    Sort ascending.
 #                                   Example: 3 1 2 => 1 2 3.
 #
-#     --sort-desc                   Sort descending.
+#     sort-desc                   Sort descending.
 #                                   Example: 3 1 2 => 3 2 1.
 #
 # Input:
 #
-#     --input-fields                The input uses fields, one number per field.
+#     input-fields                The input uses fields, one number per field.
 #                                   The script will produce one output per record.
 #
-#     --input-records               The input uses records, one number per record.
+#     input-records               The input aggregates all fields in all records.
 #                                   The script will produce one output overall.
 #
-#     --input-is-sorted             The input is already sorted ascending.
-#                                   Optimizes `median`, `minimum`, `maximum`, etc.
+#     input-is-linear             The input is linear numbers, i.e. on a line.
+#                                   Optimizes `sum`, `mean`, etc.
 #
-#     --input-is-unique             The input is already unique.
+#     input-is-numbers            The input is all numbers, no text.
+#                                   Optimizes parsing numbers.
+#
+#     input-is-sorted             The input is already sorted ascending.
+#                                   Optimizes `median`, `min`, `max`, etc.
+#
+#     input-is-unique             The input is already unique.
 #                                   Optimizes `unique`, `select-unique`, `reject-unique`, etc.
 #
 # Output:
 #
-#     --output-label                Label each output item, such as "sum 123".
+#     output-label                Label each output item, such as "sum 123".
 #                                   Default is unlabeled, such as "123".
 #
-#     --output-csv                  Output comma-separated values.
+#     output-csv                  Output comma-separated values.
 #                                   [#TODO Default is awk field separator]
 #
-#     --output-tsv                  Output tab-separated values.
+#     output-tsv                  Output tab-separated values.
 #                                   [#TODO Default is awk field separator]
 #
 # Notation:
 #
+#   * Option flag dashes are optional; for example `sum-of-squares`
+#     and `sumofsquares`.
+#
 #   * If a value is unknown, or not a number, then it will print as "?".
+#
+#
+# ## Ideas for future upgrades
+#
+# Numbers functions: `transpose`, `reverse`, etc.
+#
+# Count functions: `count-positive`, `count-negative`, `count-zero`,
+# `count-non-zero`, `count-even`, `count-odd`, etc.
+#
+# Mathematics functions: `absmin`, `absmax`, etc.
+#
+# List functions: `rand`, `collapse`, `countunique`, etc.
+#
+# Quantile functions:s `q0`, `q1`, `q2`, `q3, `q4`, `iqr`.
+#
+# Statistics functions such as `antimode`, `pstdev`, `sstdev`, `pvar`, `svar`,
+# `mad`, `madraw`, `sskew`, `pskew`, `skurt`, `pkurt`, `jarque`, `dpo`.
+#
+# IO functions: `input-header`, `output-header`, `format`, `printf`,
+# `zero-termination`, etc.
+#
+# Table functions: `group`, `filler`, etc.
+#
+# Typical Unix functions: `help`, `version`, etc.
+#
+# Other functions such as those in other math stats tools.
+#
+#
+# ## Other Mathematics Statistics Tools
+#
+# GNU datamash:
+# http://www.gnu.org/software/datamash/manual/datamash.html
+#
+# R language
+#
+# Python Panda
+#
 #
 # ## Tracking
 #
@@ -113,48 +238,48 @@ set -euf
 ##
 # Programmers Implementation Notes
 #
-# A typical function takes a numbers array and options array:
+# ## Introduction
 #
-#     function foo(nums, opts) {
-#       ...
+# A simple function has an input that is a numbers array (`nums`), such as:
+#
+#     function sum(nums,  x, i) {
+#         for (i in nums) x += nums[i]
+#         return x
 #     }
 #
+# A typical function also has an input for metadata (`nums_`), such as
+# cached results and/or previously-known information about the numbers:
 #
-# A typical function may cache its return value in the options.
-# This is called "memoization" and speeds up some calculations,
-# because subsequent calls to the function return immediately.
-#
-# Example:
-#
-#     function foo(nums, opts) {
-#       if (!("foo" in opts)) {
-#         opts["foo"] = bar
-#       }
-#       return opts["foo"]
+#     function sum(nums, nums_,   i) {
+#         if (!("sums" in nums_))
+#            for (i in nums) nums_["sum"] += nums[i]
+#         return nums_["sum"]
 #     }
 #
-# Example sum function:
+# We can optimize by using results of other functions, such as:
 #
-#     function sum(nums, opts,  x, i) {  # typical parameters
-#       if (!("sum" in opts)) {       # typical memoization
-#         x = 0                          # explict zero
-#         for (i in a) {                 # iterate
-#           x += a[i]                    # add
-#         }
-#         opts["sum"] = x             # typical memoization
-#       }
-#       return opts["sum"]            # return memoization
+#     function min(nums, nums_,  x, i) {
+#          if (nums_["ascending"])
+#              return first(nums)
+#          else if (nums_["descending"])
+#              return last(nums)
+#          else {
+#              x = nums[1]
+#              for (i in nums) if (nums[i] < x) x = nums[i]
+#              return x
+#          }
 #     }
 #
-# Example opts that any function can use:
+# Example extra data that any function can use:
 #
-#   * `opts["unique"]` is boolean 0|1 if the list numbers are unique.
-#   * `opts["sorted"]` is boolean 0|1 if the list numbers are sorted.
+#   * `nums_["unique"]` boolean 0|1 if nums is unique numbers.
+#   * `nums_["ascending"]` boolean 0|1 if nums is sorted ascending.
+#   * `nums_["descending"]` boolean 0|1 if nums is sorted descending.
 #
 # Function conventions:
 #
 #   * Use the `awk` convention of two spaces to separate the function
-#     declaration's list of input variables from internal variables.
+#     declaration list of input variables from internal variables.
 #
 #   * Check if the array has a key that is the same name as the function.
 #     If the key exists, then skip any calculation; simply return the value.
@@ -174,9 +299,6 @@ set -euf
 #   * Prefer term `nums` for a numbers array vs. `arr` for a generic array.
 #     The term `nums` is a contract that the array is always all numbers.
 #
-#   * Prefer words vs. shorthands for UI. Example: use "maximum" not "max".
-#     This is because words are easier to read for non-English speakers.
-#
 #   * Prefer operatior whitespace vs. none. Example: use `a = b` not `a=b`.
 #     This is atypical for awk, but typical for Go, Python, Ruby, etc.
 #
@@ -185,7 +307,7 @@ set -euf
 #     has a POSIX function and gawk function, and chooses the right one.
 #
 #   * Prefer clarity vs. small optimizations. Example: intermediate vars.
-#     If a user has a need for speed or size, it's wiser to use R, Go, etc.
+#     If a user has a need for speed or size, it is wiser to use R, Go, etc.
 #     Big optimizations are always welcome and can be added here quickly.
 #
 #   * Local vars may be prefixed with "_". Example: "_foo" is local.
@@ -195,6 +317,15 @@ set -euf
 #
 #   * Launch using `#/usr/bin/env awk` because we need the `-f` arg.
 #   * Launch using `#/usr/bin/env -S ..` because we want POSIX.
+#
+# To do:
+#
+#   * Upgrade to calc by column (a.k.a. field) or row (a.k.a. record).
+#   * Create packages for apt, yum, brew, etc.
+#   * Improve documentation, especially for novices.
+#   * Improve tests, especially for corner cases.
+#   * Improve POSIX compatibility, e.g. `length` function.
+#   * Improve functionality, e.g. add boolean checks, number ranges.
 ##
 
 awk '
@@ -205,51 +336,83 @@ awk '
 #
 ##
 
+# All items, i.e. echo.
+#
+function all(nums, nums_, opts) {
+    return arr_join(nums, OFS)
+}
+
+# First item.
+#
+# Example:
+#
+#   1 2 4 => 1
+#
+function first(nums, nums_, opts) {
+    if (!("first" in nums_)) {
+        nums_["first"] = arr_first(nums)
+    }
+    return nums_["first"]
+}
+
+# Last item.
+#
+# Example:
+#
+#   1 2 4 => 4
+#
+function last(nums, nums_, opts) {
+    if (!("last" in nums_)) {
+        nums_["last"] = arr_last_via_arr_(nums, nums_)
+    }
+    return nums_["last"]
+}
+
 # Number of items, a.k.a. count, length.
 #
 # Example:
 #
 #     1 2 4 => 3
 #
-function n(nums, opts) {
-    if (!("n" in opts)) {
-        opts["n"] = len(nums)
+function n(nums, nums_) {
+    if (!("n" in nums_)) {
+        nums_["n"] = len(nums)
     }
-    return opts["n"]
+    return nums_["n"]
 }
 
-# Minimum, a.k.a. min.
+# Minimum value.
 #
 # Example:
 #
 #     1 2 4 => 1
 #
-function minimum(nums, opts,  _minimum, i) {
-    if (!("minimum" in opts)) {
-        if ("sorted" in opts && opts["sorted"] == TRUE) {
-            opts["minimum"] = first(nums)
-        } else {
-            opts["minimum"] = minimum_via_scan(nums)
-        }
+function min(nums, nums_,  _min, i) {
+    if (!("min" in nums_)) {
+        if (nums_["ascending"])
+            nums_["min"] = first(nums)
+        else if (nums_["descending"])
+            nums_["min"] = last_via_nums_(nums)
+        else
+            nums_["min"] = arr_min_via_scan(nums)
     }
-    return opts["minimum"]
+    return nums_["min"]
 }
 
-# Maximum, a.k.a. max.
+# Maximum value.
 #
 # Example:
 #
 #     1 2 4 => 4
 #
-function maximum(nums, opts,  _maximum, i) {
-    if (!("maximum" in opts)) {
-        if ("sorted" in opts && opts["sorted"] == TRUE) {
-            opts["maximum"] = last_via_opts(nums, opts)
-        } else {
-            opts["maximum"] = maximum_via_scan(nums)
-        }
-    }
-    return opts["maximum"]
+function max(nums, nums_,  _max, i) {
+    if (nums_["ascending"])
+        nums_["max"] = last_via_nums_(nums, nums_)
+    else if (nums_["descending"])
+        nums_["max"] = first(nums)
+    else
+        nums_["max"] = arr_max_via_scan(nums)
+    return nums_["max"]
 }
 
 # Range, a.k.a. spread.
@@ -258,11 +421,11 @@ function maximum(nums, opts,  _maximum, i) {
 #
 #     1 2 4 => 3
 #
-function range(nums, opts) {
-    if (!("range" in opts)) {
-        opts["range"] = maximum(nums, opts) - minimum(nums, opts)
+function range(nums, nums_) {
+    if (!("range" in nums_)) {
+        nums_["range"] = max(nums, nums_) - min(nums, nums_)
     }
-    return opts["range"]
+    return nums_["range"]
 }
 
 # Sum, a.k.a. total.
@@ -271,15 +434,15 @@ function range(nums, opts) {
 #
 #     1 2 4 => 7
 #
-function sum(nums, opts, _sum, i) {
-    if (!("sum" in opts)) {
+function sum(nums, nums_, _sum, i) {
+    if (!("sum" in nums_)) {
         _sum = 0
         for (i in nums) {
             _sum += nums[i]
         }
-        opts["sum"] = _sum
+        nums_["sum"] = _sum
     }
-    return opts["sum"]
+    return nums_["sum"]
 }
 
 # Mean, a.k.a. arithmetic mean, average.
@@ -288,11 +451,15 @@ function sum(nums, opts, _sum, i) {
 #
 #     1 2 4 => 2.33333
 #
-function mean(nums, opts) {
-    if (!("mean" in opts)) {
-        opts["mean"] = sum(nums, opts) / n(nums, opts)
+function mean(nums, nums_) {
+    if (!("mean" in nums_)) {
+        if (nums_["linear"]){
+          nums_["mean"] = (max(nums, nums_) - min(nums, nums_)) / n(nums, nums_)
+        } else {
+          nums_["mean"] = sum(nums, nums_) / n(nums, nums_)
+        }
     }
-    return opts["mean"]
+    return nums_["mean"]
 }
 
 # Median.
@@ -302,17 +469,17 @@ function mean(nums, opts) {
 #     1 2 4 => 2
 #     1 2 4 99 => 3
 #
-function median(nums, opts,  _n) {
-    if (!("median" in opts)) {
-        sort_in_place(nums, opts)
-        _n = n(nums, opts)
+function median(nums, nums_,  _n) {
+    if (!("median" in nums_)) {
+        arr_sort_in_place(nums, nums_)
+        _n = n(nums, nums_)
         if (_n % 2) {
-            opts["median"] = nums[(_n + 1) / 2]
+            nums_["median"] = nums[(_n + 1) / 2]
         } else {
-            opts["median"] = nums[(_n / 2)] + (nums[(_n / 2) + 1] / 2.0)
+            nums_["median"] = nums[(_n / 2)] + (nums[(_n / 2) + 1] / 2.0)
         }
     }
-    return opts["median"]
+    return nums_["median"]
 }
 
 # Mode: get the first mode; if there is none, return NAN.
@@ -323,16 +490,20 @@ function median(nums, opts,  _n) {
 #     1 2 2 3 3 => 2
 #     1 2 3 => "?"
 #
-function mode(nums, opts,  _modes) {
-    if (!("mode" in opts)) {
-        modes(nums, opts, _modes)
-        if (empty(_modes)) {
-            opts["mode"] = NAN
+function mode(nums, nums_,  _modes) {
+    if (!("mode" in nums_)) {
+        if (_nums["unique"]) {
+            nums_["mode"] = NAN
         } else {
-            opts["mode"] = _modes[1]
+            modes(nums, nums_, _modes)
+            if (arr_empty(_modes)) {
+                nums_["mode"] = NAN
+            } else {
+               nums_["mode"] = _modes[1]
+            }
         }
     }
-    return opts["mode"]
+    return nums_["mode"]
 }
 
 # Modes.
@@ -347,26 +518,30 @@ function mode(nums, opts,  _modes) {
 #
 #     1 2 2 3 => 2
 #     1 2 2 3 3 => 2 3
-#     1 2 3 => empty array
+#     1 2 3 => NAN
 #
-function modes(nums, opts, dest,  _dest_i, _seen, _max, i, j, s) {
-    if (!("modes" in opts)) {
-        split("", dest)
-        _dest_i = 0
-        for (i in nums) _seen[nums[i]]++
-        _max = maximum_via_scan(_seen)
-        if (_max > 1) {
-            for (i in _seen) {
-                if (_seen[i] == _max) {
-                    dest[++dest_i] = i
-                }
-            }
-            opts["modes"] = join(dest, FS)
+function modes(nums, nums_, dest,  _dest_i, _seen, _max, i, j, s) {
+    if (!("modes" in nums_)) {
+        if (_nums["unique"]) {
+            nums_["modes"] = NAN
         } else {
-            opts["modes"] = NAN
+            split("", dest)
+            _dest_i = 0
+            for (i in nums) _seen[nums[i]]++
+            _max = arr_max_via_scan(_seen)
+            if (_max > 1) {
+                for (i in _seen) {
+                    if (_seen[i] == _max) {
+                       dest[++dest_i] = i
+                    }
+                }
+                nums_["modes"] = arr_join(dest, OFS)
+            } else {
+               nums_["modes"] = NAN
+            }
         }
     }
-    return opts["modes"]
+    return nums_["modes"]
 }
 
 # Middle, i.e. the value closest to the mean.
@@ -375,11 +550,11 @@ function modes(nums, opts, dest,  _dest_i, _seen, _max, i, j, s) {
 #
 #     1 2 4 => 2
 #
-function middle(nums, opts,  _middle, _diff, i) {
-    if (!("middle" in opts)) {
-        opts["middle"] = closest_via_opts(nums, opts, mean(nums, opts))
+function middle(nums, nums_,  _middle, _diff, i) {
+    if (!("middle" in nums_)) {
+        nums_["middle"] = arr_closest_via_arr_(nums, nums_, mean(nums, nums_))
     }
-    return opts["middle"]
+    return nums_["middle"]
 }
 
 # Sum of Squares, a.k.a. SS.
@@ -388,16 +563,16 @@ function middle(nums, opts,  _middle, _diff, i) {
 #
 #     1 2 4 => 4.66667
 #
-function sum_of_squares(nums, opts,  _sum, _mean, i) {
-    if (!("sum_of_squares" in opts)) {
+function sum_of_squares(nums, nums_,  _sum, _mean, i) {
+    if (!("sum_of_squares" in nums_)) {
         _sum = 0
-        _mean = mean(nums, opts)
+        _mean = mean(nums, nums_)
         for (i in nums) {
             _sum += (nums[i] - _mean) ** 2
         }
-        opts["sum_of_squares"] = _sum
+        nums_["sum_of_squares"] = _sum
     }
-    return opts["sum_of_squares"]
+    return nums_["sum_of_squares"]
 }
 
 # Variance
@@ -406,16 +581,16 @@ function sum_of_squares(nums, opts,  _sum, _mean, i) {
 #
 #     1 2 4 => 1.55556
 #
-function variance(nums, opts,  _n, _mean, _diff, i) {
-    if (!("variance" in opts)) {
-        _n = n(nums, opts)
-        _mean = mean(nums, opts)
+function variance(nums, nums_,  _n, _mean, _diff, i) {
+    if (!("variance" in nums_)) {
+        _n = n(nums, nums_)
+        _mean = mean(nums, nums_)
         for (i in nums){
             _diff += (nums[i] - _mean) ** 2
         }
-        opts["variance"] = _diff / _n
+        nums_["variance"] = _diff / _n
     }
-    return opts["variance"]
+    return nums_["variance"]
 }
 
 # Standard Deviation, a.k.a. SD.
@@ -424,11 +599,11 @@ function variance(nums, opts,  _n, _mean, _diff, i) {
 #
 #     1 2 4 => 1.24722
 #
-function standard_deviation(nums, opts) {
-    if (!("standard_deviation" in opts)) {
-        opts["standard_deviation"] = sqrt(variance(nums, opts))
+function standard_deviation(nums, nums_) {
+    if (!("standard_deviation" in nums_)) {
+        nums_["standard_deviation"] = sqrt(variance(nums, nums_))
     }
-    return opts["standard_deviation"]
+    return nums_["standard_deviation"]
 }
 
 # Coefficient of Variance, a.k.a. CV.
@@ -437,11 +612,53 @@ function standard_deviation(nums, opts) {
 #
 #     1 2 4 => 0.534522
 #
-function coefficient_of_variance(nums, opts) {
-    if (!("coefficient_of_variance" in opts)) {
-        opts["coefficient_of_variance"] = standard_deviation(nums, opts) / mean(nums, opts)
+function coefficient_of_variance(nums, nums_) {
+    if (!("coefficient_of_variance" in nums_)) {
+        nums_["coefficient_of_variance"] = standard_deviation(nums, nums_) / mean(nums, nums_)
     }
-    return opts["coefficient_of_variance"]
+    return nums_["coefficient_of_variance"]
+}
+
+############################################################################
+#
+# BOOLEAN FUNCTIONS
+#
+##
+
+function is_ascending(nums, nums_,   f, x, i) {
+    if (!("ascending" in nums_)) {
+        if ("descending" in nums) {
+            nums_["ascending"] = ! nums_["descending"]
+        } else {
+            x = first(nums, nums_)
+            nums_["ascending"] = TRUE
+            for (i in nums) {
+                if (nums[i] < x) {
+                    nums_["ascending"] = FALSE
+                    break
+                }
+            }
+        }
+    }
+    return nums_["ascending"]
+}
+
+function is_descending(nums, nums_,   x, i) {
+    if (!("descending" in nums_)) {
+        if ("ascending" in nums) {
+            nums_["descending"] = ! nums_["ascending"]
+        } else {
+            x = first(nums, nums_)
+            nums_["descending"] = TRUE
+            for (i in nums) {
+                if (nums[i] > x) {
+                    nums_["descending"] = FALSE
+                    break
+                }
+            }
+        }
+    }
+    return nums_["descending"]
 }
 
 ############################################################################
@@ -454,17 +671,17 @@ function coefficient_of_variance(nums, opts) {
 #
 # Example:
 #
-#     dump(a)
+#     arr_dump(arr)
 #     +++
 #     1 a
 #     2 b
 #     3 d
 #     ---
 #
-function dump(arr) {
+function arr_dump(arr) {
     print "+++"
     for (k in arr) {
-        print k, a[k]
+        print k, arr[k]
     }
     print "---"
 }
@@ -473,12 +690,12 @@ function dump(arr) {
 #
 # Example:
 #
-#   split("", a)
-#   empty(a) => TRUE
+#   split("", arr)
+#   arr_empty(arr) => TRUE
 #
 # This is POSIX compatible.
 #
-function empty(arr,  i) {
+function arr_empty(arr,  i) {
     for (i in arr) return 0
     return 1
 }
@@ -487,9 +704,9 @@ function empty(arr,  i) {
 #
 # Example:
 #
-#     join(1 2 4, ",") => "1,2,4"
+#     arr_join(1 2 4, ",") => "1,2,4"
 #
-function join(arr, sep,  s, i) {
+function arr_join(arr, sep,  s, i) {
     s = ""
     for (i in arr) {
       s = s arr[i] sep
@@ -501,9 +718,9 @@ function join(arr, sep,  s, i) {
 #
 # Example:
 #
-#     join(1 2 4, ",", "<", ">") => "<1>,<2>,<4>"
+#     arr_join(1 2 4, ",", "<", ">") => "<1>,<2>,<4>"
 #
-function join_with_prefix_suffix(arr, sep, prefix, suffix,  s, i) {
+function arr_join_with_prefix_suffix(arr, sep, prefix, suffix,  s, i) {
     s = ""
     for (i in arr) s = s prefix arr[i] suffix sep
     return substr(s, 1, length(s) - length(sep))
@@ -513,11 +730,11 @@ function join_with_prefix_suffix(arr, sep, prefix, suffix,  s, i) {
 #
 # Example:
 #
-#     len(1 2 4) => 3
+#     arr_length(1 2 4) => 3
 #
 # TODO: Optimize - consider using `gawk` and its `length` function.
 #
-function len(arr,  i, k) {
+function arr_length(arr,  i, k) {
     for (i in arr) k++
     return k
 }
@@ -526,9 +743,9 @@ function len(arr,  i, k) {
 #
 # Example:
 #
-#     first(1 2 4) => 1
+#     arr_first(1 2 4) => 1
 #
-function first(arr) {
+function arr_first(arr) {
     return arr[1]
 }
 
@@ -536,44 +753,44 @@ function first(arr) {
 #
 # Example:
 #
-#     last_via_length(1 2 4) => 4
+#     arr_last_via_length(1 2 4) => 4
 #
-function last_via_length(arr) {
+function arr_last_via_length(arr) {
     return arr[length(arr)]
 }
 
-# Get the last item in an array, by using the `opts["n"]` value.
+# Get the last item in an array, by using the `arr_["n"]` value.
 #
 # Example:
 #
-#     last_via_opts(1 2 4, opts) => 4
+#     arr_last_via_arr_(1 2 4, arr_) => 4
 #
-function last_via_opts(arr, opts) {
-    return arr[opts["n"]]
+function arr_last_via_arr_(arr, arr_) {
+    return arr[arr_["n"]]
 }
 
 # Get the minimum value, by doing a scan of the entire array.
 #
 # Example:
 #
-#     minimum_via_scan(1 2 4) => 4
+#     arr_min_via_scan(1 2 4) => 4
 #
-function minimum_via_scan(arr,  _minimum) {
-    _minimum = arr[1]
-    for (i in arr) if (arr[i] < _minimum) _minimum = arr[i]
-    return _minimum
+function arr_min_via_scan(arr,  _min) {
+    _min = arr[1]
+    for (i in arr) if (arr[i] < _min) _min = arr[i]
+    return _min
 }
 
 # Get the maxmimum value, by doing a scan of the entire array.
 #
 # Example:
 #
-#     maximum_via_scan(1 2 4) => 4
+#     arr_max_via_scan(1 2 4) => 4
 #
-function maximum_via_scan(arr,  _maximum) {
-    _maximum = arr[1]
-    for (i in arr) if (arr[i] > _maximum) _maximum = arr[i]
-    return _maximum
+function arr_max_via_scan(arr,  _max) {
+    _max = arr[1]
+    for (i in arr) if (arr[i] > _max) _max = arr[i]
+    return _max
 }
 
 # Get the closest item value to a target value in an array.
@@ -582,12 +799,12 @@ function maximum_via_scan(arr,  _maximum) {
 #
 #    arr = 1 2 4
 #    target = 2.5
-#    closest(arr, opts, target) => 2
+#    arr_closest(arr, arr_, target) => 2
 #
 # If multiple values are equidistant to the target,
 # then return the earliest value.
 #
-function closest_via_opts(arr, opts, target, _closest_value, _closest_delta, _delta, x, i) {
+function arr_closest_via_arr_(arr, arr_, target, _closest_value, _closest_delta, _delta, x, i) {
     #TODO optimize when the array is already sorted,
     # by using quicksort or similar divide-and-conquer.
     _closest_value = first(arr)
@@ -602,57 +819,74 @@ function closest_via_opts(arr, opts, target, _closest_value, _closest_delta, _de
     return _closest_value
 }
 
-# Push one item on the array stack, by using the `length` function.
+# Push one item on an array stack, by using the `length` function.
 #
 # Example:
 #
 #     arr = 1 2
-#     push_via_length(arr, 4)
+#     arr_push_via_length(arr, 4)
 #     => arr == 1 2 4
 #
-function push_via_length(arr, item) {
+function arr_push_via_length(arr, item) {
     arr[length(arr)+1] = item
 }
 
-# Push one item on the array stack, by using the `opts["n"]` value.
+# Push one item on an array stack, by using the `arr_["n"]` value.
 #
 #    arr = 1 2
-#    push_via_opts(arr, opts, 4)
+#    arr_["n"] = 2
+#    arr_push_via_arr_(arr, arr_, 4)
 #    => arr == 1 2 4
 #
-function push_via_opts(arr, opts, item) {
-    arr[++opts["n"]] = item
+function arr_push_via_arr_(arr, arr_, item) {
+    arr[++arr_["n"]] = item
 }
 
 # Push multiple items on the array stack, by using the `length` function.
 #
 # Example:
 #
-#     arr = 1 2
-#     b = 4 8
-#     pushes_via_length(arr, b)
+#     arr1 = 1 2
+#     arr2 = 4 8
+#     arr_pushes_via_length(arr1, arr2)
 #     => arr == 1 2 4 8
 #
-function pushes_via_length(arr, items, _n, _i) {
+function arr_pushes_via_length(arr, items, _n, _i) {
     _n = length(arr)
     for (_i in items) {
         arr[++_n] = items[_i]
     }
 }
 
-# Push multiple items on the array stack, by using the `opts["n"]` value.
+# Push multiple items on the array stack, by using the `arr_["n"]` value.
 #
-#    arr = 1 2
-#    b = 4 8
-#    pushes_via_opts(arr, opts, b)
+#    arr1 = 1 2
+#    arr2 = 4 8
+#    arr_["n"] = 2
+#    arr_pushes_via_arr_(arr, arr_, b)
 #    => arr == 1 2 4 8
 #
-function pushes_via_opts(arr, opts, items, _n, _i) {
-    _n = opts["n"]
+function arr_pushes_via_arr_(arr, arr_, items, _n, _i) {
+    _n = arr_["n"]
     for (_i in items) {
         arr[++_n] = items[_i]
     }
-    opts["n"] += _n
+    arr_["n"] += _n
+}
+
+# Push multiple numbers on the array stack, by using the `arr_["n"]` value.
+#
+#    arr = 1 2
+#    b = 4 8
+#    arr_pushes_via_arr_(arr, arr_, b)
+#    => arr == 1 2 4 8
+#
+function arr_pushes_numbers_via_arr_(arr, arr_, items, _n, _i) {
+    _n = arr_["n"]
+    for (_i in items) {
+        arr[++_n] = items[_i]
+    }
+    arr_["n"] += _n
 }
 
 # Pop one item of the array stack, by using the `length` function.
@@ -660,13 +894,13 @@ function pushes_via_opts(arr, opts, items, _n, _i) {
 # Example:
 #
 #     arr = 1 2 4
-#     pop_via_length(a)
+#     arr_pop_via_length(a)
 #     => 4
 #     => arr == 1 2
 #
 # If the array is empty, return "".
 #
-function pop_via_length(arr, _x, _n) {
+function arr_pop_via_length(arr, _x, _n) {
     _n = length(arr)
     if (_n) {
         _x = arr[_n]
@@ -677,23 +911,23 @@ function pop_via_length(arr, _x, _n) {
     }
 }
 
-# Pop one item of the array stack, by using the `opts["n"]` value.
+# Pop one item of the array stack, by using the `arr_["n"]` value.
 #
 # Example:
 #
 #     arr = 1 2 4
-#     pop_via_opts(arr, opts)
+#     arr_pop_via_arr_(arr, arr_)
 #     => 4
 #     => arr == 1 2
 #
 # If the array is empty, return "".
 #
-function pop_via_opts(arr, opts, _x) {
-    _n = opts["n"]
+function arr_pop_via_arr_(arr, arr_, _x) {
+    _n = arr_["n"]
     if (_n) {
         x = arr[_n]
         delete arr[_n]
-        opts["n"]--
+        arr_["n"]--
         return x
     } else {
         return ""
@@ -705,12 +939,12 @@ function pop_via_opts(arr, opts, _x) {
 # Example:
 #
 #     arr = 3 1 2
-#     sort_in_place(arr, opts)
+#     arr_sort_in_place(arr, arr_)
 #     => arr == 1 2 3
 #
-# Opts:
+# Arr_:
 #
-#    * `opts["sorted"]` means the array is already sorted.
+#    * `arr_["sorted"]` means the array is already sorted.
 #
 # Caution: This implementation requires the `asort` function,
 # which we believe is available in current `gawk` implementations,
@@ -718,10 +952,42 @@ function pop_via_opts(arr, opts, _x) {
 #
 # TODO: Research if `asort` is POSIX or if there are alternatives.
 #
-function sort_in_place(arr, opts) {
-    if (opts["sorted"] != TRUE) {
+function arr_sort_in_place(arr, arr_) {
+    if (arr_["sorted"] != TRUE) {
         asort(arr)
-        opts["sorted"] = TRUE
+        arr_["sorted"] = TRUE
+    }
+}
+
+# Select numbers, by doing in-place destructive logic.
+#
+# Example:
+#
+#     arr = foo 1 goo 2
+#     arr_select_numbers_in_place(arr, arr_)
+#     => arr == 1 2
+#
+# Arr_:
+#
+#   * `arr_["unique"]` means the array is already unique,
+#     which means the function will be skipped.
+#
+# TODO: Optimize.
+#
+function arr_select_numbers_in_place(arr, arr_, _length, i, j) {
+    if (arr_["input_is_numbers"] != TRUE) {
+        for (i in arr) {
+            if (arr[i] == arr[i] + 0) {
+                j++
+                if (i != j) {
+                   arr[j] = arr[i]
+                }
+            }
+        }
+        _length = length(arr)
+        for (i = j + 1; i <= _length; i++) delete arr[i]
+        arr_["n"] = j  #TODO clear cache of results
+        arr_["input_is_numbers"] = TRUE
     }
 }
 
@@ -730,23 +996,23 @@ function sort_in_place(arr, opts) {
 # Example:
 #
 #     arr = 1 2 2 3
-#     effect_unique_in_place(arr, opts)
+#     arr_effect_unique_in_place(arr, arr_)
 #     => arr == 1 2 3
 #
-# Opts:
+# Arr_:
 #
-#   * `opts["unique"]` means the array is already unique,
+#   * `arr_["unique"]` means the array is already unique,
 #     which means the function will be skipped.
 #
 # TODO: Optimize.
 #
-function effect_unique_in_place(arr, opts, _dest, _seen, i) {
+function arr_effect_unique_in_place(arr, arr_, _dest, _seen, i) {
     info("effect_unique_in_place")
-    if (opts["unique"] != TRUE) {
+    if (arr_["unique"] != TRUE) {
         for (i in arr) _seen[arr[i]] == TRUE
         for (i in _seen) _dest[++j] = i
         arr = _dest
-        opts["unique"] = TRUE
+        arr_["unique"] = TRUE
     }
 }
 
@@ -755,23 +1021,23 @@ function effect_unique_in_place(arr, opts, _dest, _seen, i) {
 # Example:
 #
 #     arr = 1 2 2 3
-#     select_unique_in_place(arr, opts)
+#     arr_select_unique_in_place(arr, arr_)
 #     => arr == 1 3
 #
-# Opts:
+# Arr_:
 #
-#   * `opts["unique"]` means the array is already unique,
+#   * `arr_["unique"]` means the array is already unique,
 #     which means the function will be skipped.
 #
 # TODO: Optimize.
 #
-function select_unique_in_place(arr, opts, _dest, _seen, i) {
+function arr_select_unique_in_place(arr, arr_, _dest, _seen, i) {
     info("select_unique_in_place")
-    if (opts["unique"] != TRUE) {
+    if (arr_["unique"] != TRUE) {
         for (i in arr) _seen[arr[i]]++
         for (i in _seen) if (_seen[i] == 1) dest[++j] = i
         arr = _dest
-        opts["unique"] = TRUE
+        arr_["unique"] = TRUE
     }
 }
 
@@ -780,19 +1046,19 @@ function select_unique_in_place(arr, opts, _dest, _seen, i) {
 # Example:
 #
 #     arr = 1 2 2 3
-#     reject_unique_in_place(arr, opts)
+#     arr_reject_unique_in_place(arr, arr_)
 #     => arr == 2
 #
-# Opts:
+# Arr_:
 #
-#   * `opts["unique"]` means the array is already unique,
+#   * `arr_["unique"]` means the array is already unique,
 #      which means this function will reject all the numbers.
 #
 # TODO: Memoize.
 #
-function reject_unique_in_place(arr, opts, _dest, _seen, i) {
+function arr_reject_unique_in_place(arr, arr_, _dest, _seen, i) {
     info("reject_unique_in_place")
-    if (opts["unique"] == TRUE) {
+    if (arr_["unique"] == TRUE) {
         split("", arr)
     } else {
         for (i in arr) _seen[arr[i]]++
@@ -840,9 +1106,7 @@ function error(msg) {
 # This clears the arrays, then sets the numbers count to 0.
 #
 function ready() {
-    split("", __nums)
-    split("", __opts)
-    __opts["n"] = 0
+  init_nums()
 }
 
 ############################################################################
@@ -869,6 +1133,8 @@ function word_to_conf(word, conf) {
         conf["input_scope"] = CONF_INPUT_SCOPE_FIELDS
     else if (word == "input-records")
         cont["input_scope"] = CONF_INPUT_SCOPE_RECORDS
+    else if (word == "input-is-linear")
+        conf["sorted"] = TRUE
     else if (word == "input-is-sorted")
         conf["sorted"] = TRUE
     else if (word == "input-is-unique")
@@ -876,9 +1142,9 @@ function word_to_conf(word, conf) {
     else if (word == "output-label")
         conf["output_label"] = TRUE
     else if (word == "output-csv")
-        conf["output_field_join"] = ","
+        conf["output_field_separator"] = ","
     else if (word == "output-tsv")
-        conf["output_field_join"] = "\t"
+        conf["output_field_separator"] = "\t"
     else if (word == "median")
         conf["sort"] = "?"
     else if (word == "unique")
@@ -889,11 +1155,11 @@ function word_to_conf(word, conf) {
 
 # Copy relevant conf items to the number list items.
 #
-function conf_to_opts() {
-    opts["sorted"] = conf["sorted"]
-    opts["unique"] = conf["unique"]
-    opts["sort"] = conf["sort"]
-    opts["unique"] = conf["unique"]
+function conf_to_nums_() {
+    nums_["sorted"] = conf["sorted"]
+    nums_["unique"] = conf["unique"]
+    nums_["sort"] = conf["sort"]
+    nums_["unique"] = conf["unique"]
 }
 
 # Call this function for each option word a.k.a. flag,
@@ -902,8 +1168,8 @@ function conf_to_opts() {
 # Example:
 #
 #     nums = 1 2 4
-#     opts = []
-#     word_to_function(nums, opts, "sum")
+#     nums_ = []
+#     word_to_function(nums, nums_, "sum")
 #     => 7 (by calling the `sum` function)
 #
 # Note: this implementation uses if..else instead of
@@ -912,35 +1178,41 @@ function conf_to_opts() {
 # TODO: Is there a way to shorten this function,
 # perhaps by reflection on the word and function name?
 #
-function word_to_function(nums, opts, word) {
-    if (word == "n")
-        return (n(nums, opts))
-    else if (word == "minimum")
-        return minimum(nums, opts)
-    else if (word == "maximum")
-        return maximum(nums, opts)
+function word_to_function(nums, nums_, word) {
+    if (word == "all")
+        return (all(nums, nums_))
+    else if (word == "first")
+        return (first(nums, nums_))
+    else if (word == "last")
+        return (last(nums, nums_))
+    else if (word == "n")
+        return (n(nums, nums_))
+    else if (word == "min")
+        return min(nums, nums_)
+    else if (word == "max")
+        return max(nums, nums_)
     else if (word == "range")
-        return range(nums, opts)
+        return range(nums, nums_)
     else if (word == "sum")
-         return sum(nums, opts)
+         return sum(nums, nums_)
     else if (word == "median")
-        return median(nums, opts)
+        return median(nums, nums_)
     else if (word == "mean")
-        return mean(nums, opts)
+        return mean(nums, nums_)
     else if (word == "middle")
-        return middle(nums, opts)
+        return middle(nums, nums_)
     else if (word == "mode")
-        return mode(nums, opts)
+        return mode(nums, nums_)
     else if (word == "modes")
-        return modes(nums, opts)
+        return modes(nums, nums_)
     else if (word == "sum-of-squares")
-        return sum_of_squares(nums, opts)
+        return sum_of_squares(nums, nums_)
     else if (word == "variance")
-        return variance(nums, opts)
+        return variance(nums, nums_)
     else if (word == "standard-deviation")
-        return standard_deviation(nums, opts)
+        return standard_deviation(nums, nums_)
     else if (word == "coefficient-of-variance")
-        return coefficient_of_variance(nums, opts)
+        return coefficient_of_variance(nums, nums_)
     else
         return ""
 }
@@ -950,7 +1222,7 @@ function word_to_function(nums, opts, word) {
 # Example:
 #
 #     nums = 1 2 4
-#     opts = []
+#     nums_ = []
 #     word_to_s(nums, opts, "sum")
 #     => "7"
 #
@@ -983,12 +1255,12 @@ function word_to_s(nums, opts, word,  x, s) {
 
 function words_to_s(nums, opts, words,  word, i, s, s2) {
     s = ""
-    sep = FS  #TODO opts["output_field_join"]
+    sep = opts["output_field_separator"]
     for (i in words) {
         word = words[i]
         if (__words_output[word]) {
             x = word_to_s(nums, opts, word)
-            s = s x FS
+            s = s x sep
         }
     }
     s = substr(s, 1, length(s) - length(sep))
@@ -998,33 +1270,34 @@ function words_to_s(nums, opts, words,  word, i, s, s2) {
 ## Filtering
 
 function filters(nums, opts) {
-    return  #TODO
+    if ("select-numbers") arr_select_numbers_in_place(nums, opts)
     if ("select-unique" in opts) select_unique_in_place(nums, opts)
     if ("reject-unique" in opts) reject_unique_in_place(nums, opts)
-    if ("sort-asc" in opts) sort_in_place(nums, opts)
+    if ("sort-asc" in opts) arr_sort_in_place(nums, opts)
     if ("sort-desc" in opts) print "#TODO"
-    print "filters stop"; dump(a)
+    #print "filters stop"; arr_dump(a)
 }
 
 ## Argv Functions
 
 function parse_argv(  i, word) {
     for (i in ARGV) {
-        #TODO optimize?
-        if (ARGV[i] ~ /^--(input-fields|input-records|input-is-sorted|input-is-unique|output-label|output-csv|output-tsv|n|count|length|minimum|min|maximum|max|range|spread|sum|total|median|mean|average|middle|mid|mode|modes|sum-of-squares|ss|variance|var|standard-deviation|sd|std|coefficient-of-variance|covar|cv|unique|effect-unique|select-unique|reject-unique|sort|sort-asc|sort-desc)/) {
+        #info("parse_argv ARGV[" i "]:" ARGV[i])
+        if (ARGV[i] in __words_list) {
             word = ARGV[i]
             delete ARGV[i]
-            sub(/^--/, "", word)
             word = normalize_word(word)
-            push_via_length(__words, word)
+            #info("parse_argv found word:" word)
+            arr_push_via_length(__words, word)
             word_to_conf(word, __conf)
         }
     }
 }
 
 function normalize_word(word) {
-    if (word in __words_alias) {
-        return __words_alias[word]
+    #info("normalize_word word:" word)
+    if (word in __words_list) {
+        return __words_list[word]
     } else {
         return word
     }
@@ -1038,9 +1311,10 @@ function save_argv() {
 
 ## Output Functions
 
-function output(nums, opts, words) {
-    #filters(__nums, __words)
-    print words_to_s(nums, opts, words)
+function output() {
+    __nums_["n"] = __nums_n
+    filters(__nums, __opts)
+    print words_to_s(__nums, __opts, __words)
 }
 
 ############################################################################
@@ -1057,7 +1331,7 @@ function init() {
     init_constants()
     init_conf()
     init_words()
-    init_words_alias()
+    init_words_list()
     init_words_output()
 }
 
@@ -1067,7 +1341,6 @@ function init_constants() {
     FALSE = 0
     TRUE = 1
     NAN = "NAN"
-    CONF_INPUT_SCOPE_ALL = 0
     CONF_INPUT_SCOPE_FIELDS = 1
     CONF_INPUT_SCOPE_RECORDS = 2
 }
@@ -1078,12 +1351,13 @@ function init_constants() {
 #
 function init_conf() {
     split("", __conf)
-    __conf["input_scope"] = CONF_INPUT_SCOPE_ALL
-    __conf["output_field_prefix"] = ""
-    __conf["output_field_infix"] = ":"
-    __conf["output_field_suffix"] = ""
-    __conf["output_field_separator"] = OFS
+    __conf["input_scope"] = CONF_INPUT_SCOPE_RECORDS
+    __conf["output_exists"] = FALSE
     __conf["output_record_separator"] = ORS
+    __conf["output_field_separator"] = OFS
+    __conf["output_field_prefix"] = ""
+    __conf["output_field_suffix"] = ""
+    __conf["output_field_infix"] = ":"
 }
 
 # Initialize the words list.
@@ -1095,24 +1369,43 @@ function init_words() {
     split("", __words)
 }
 
-# Initialize the `__words_alias` lookup array.
+# Initialize the `__words_list` lookup array.
 #
 # This is useful to normalize words from whatever a user types
 # on the command line to whatever we expect as canonical.
 #
-function init_words_alias() {
-    __words_alias["count"] = __words_alias["length"] = "n"
-    __words_alias["min"] = "minimum"
-    __words_alias["max"] = "maximum"
-    __words_alias["spread"] = "range"
-    __words_alias["total"] = "sum"
-    __words_alias["average"] = "mean"
-    __words_alias["mid"] = "middle"
-    __words_alias["ss"] = __words_alias["sum2"] = "sum-of-squares"
-    __words_alias["var"] = "variance"
-    __words_alias["stdev"] = __words_alias["sd"] = "standard-deviation"
-    __words_alias["covar"] = __words_alias["cv"] = "coefficient-of-variance"
-    __words_alias["unique"] = "effect-unique"
+# The first entry on a line is always the canonical entry.
+#
+function init_words_list() {
+    __words_list["all"] = "all"
+    __words_list["n"] = __words_list["count"] = __words_list["length"] = __words_list["size"] = "n"
+    __words_list["first"] = "first"
+    __words_list["last"] = "last"
+    __words_list["min"] = __words_list["minimum"] = "min"
+    __words_list["max"] = __words_list["maximum"] = "max"
+    __words_list["range"] = __words_list["spread"] = "range"
+    __words_list["sum"] = __words_list["total"] = "sum"
+    __words_list["median"] = __words_list["med"] = "median"
+    __words_list["mean"] = __words_list["average"] = __words_list["avg"] = "mean"
+    __words_list["mode"] = "mode"
+    __words_list["modes"] = "modes"
+    __words_list["middle"] = __words_list["mid"] = "middle"
+    __words_list["sum-of-squares"] = __words_list["sumofsquares"] = __words_list["sum-squares"] = __words_list["sumsquares"] = __words_list["sum2"] = __words_list["ss"] = "sum-of-squares"
+    __words_list["variance"] = __words_list["var"] = "variance"
+    __words_list["standard-deviation"] = __words_list["standarddeviation"] =  __words_list["stdev"] = __words_list["sd"] = "standard-deviation"
+    __words_list["coefficient-of-variance"] = __words_list["coefficientofvariance"] = __words_list["coefficient-variance"] = __words_list["coefficientvariance"] = __words_list["co-var"] = __words_list["covar"] = __words_list["cv"] = "coefficient-of-variance"
+    __words_list["effect-unique"] = __words_list["effectunique"] = _words_list["unique"] = "effect-unique"
+    __words_list["select-unique"] = __words_list["selectunique"] = "select-unique"
+    __words_list["reject-unique"] = __words_list["rejectunique"] = "reject-unique"
+    __words_list["sort-ascending"] = __words_list["sortascending"] = __words_list["sort-asc"] = __words_list["sortasc"] = __words_list["sort"] = "sort-ascending"
+    __words_list["sort-descending"] = __words_list["sortdescending"] = __words_list["sort-desc"] = __words_list["sortdesc"] = "sort-descending"
+    __words_list["input-fields"] = __words_list["inputfields"] = "input-fields"
+    __words_list["input-records"] = __words_list["inputrecords"] = "input-records"
+    __words_list["input-is-linear"] = __words_list["inputislinear"] = __words_list["input-linear"] = __words_list["inputlinear"] = "input-is-linear"
+    __words_list["input-is-sorted"] = __words_list["inputissorted"] = __words_list["input-sorted"] = __words_list["inputsorted"] = "input-is-sorted"
+    __words_list["input-is-unique"] = __words_list["inputisunique"] = __words_list["input-unique"] = __words_list["inputunique"] = "input-is-unique"
+    __words_list["output-label"] = __words_list["outputlabel"] = "output-label"
+
 }
 
 # Initialize the `__words_output` lookup array.
@@ -1121,9 +1414,12 @@ function init_words_alias() {
 # then set the word output to TRUE so we know to build a string.
 #
 function init_words_output() {
+    __words_output["all"] = TRUE
+    __words_output["first"] = TRUE
+    __words_output["last"] = TRUE
     __words_output["n"] = TRUE
-    __words_output["minimum"] = TRUE
-    __words_output["maximum"] = TRUE
+    __words_output["min"] = TRUE
+    __words_output["max"] = TRUE
     __words_output["range"] = TRUE
     __words_output["sum"] = TRUE
     __words_output["median"] = TRUE
@@ -1135,6 +1431,13 @@ function init_words_output() {
     __words_output["variance"] = TRUE
     __words_output["standard-deviation"] = TRUE
     __words_output["coefficient-of-variance"] = TRUE
+}
+
+# Initialize the global numbers array and its metadata.
+function init_nums() {
+    split("", __nums)
+    split("", __nums_)
+    __nums_n = 0
 }
 
 ############################################################################
@@ -1151,26 +1454,20 @@ BEGIN{
 }
 
 {
-    if (__conf["input_scope"] == CONF_INPUT_SCOPE_ALL) {
-        split($0, fields)
-        pushes_via_opts(__nums, __opts, fields)
+    if (__conf["input_scope"] == CONF_INPUT_SCOPE_RECORDS) {
+        split($0, arr)
+        for(i in arr) if (arr[i] == arr[i] + 0) __nums[++__nums_n] = arr[i]
     }
     else if (__conf["input_scope"] == CONF_INPUT_SCOPE_FIELDS) {
         ready()
-        split($0, fields)
-        pushes_via_opts(__nums, __opts, fields)
+        split($0, arr)
+        for(i in arr) if (arr[i] == arr[i] + 0) __nums[++__nums_n] = arr[i]
         output()
-    }
-    else if (conf["input_scope"] == CONF_INPUT_SCOPE_RECORDS) {
-        __nums[NR] = $1
     }
 }
 
 END{
     if (__conf["input_scope"] == CONF_INPUT_SCOPE_RECORDS) {
-        __opts["n"] = NR
-    }
-    if (__conf["input_scope"] == INPUT_SCOPE_RECORDS || __conf["input_scope"] == INPUT_SCOPE_ALL) {
-        output(__nums, __opts, __words)
+        output()
     }
 }' "$@"
