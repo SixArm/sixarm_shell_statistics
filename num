@@ -2,73 +2,73 @@
 set -euf
 
 ##
-# NUMS: Numbers Utilties for Mathematics and Statistics.
+# Num: number utilties for mathematics and statistics.
 #
-# The goal is to provide numbers utilities for common needs,
+# The goal is to provide number utilities for common needs,
 # using common shell capabilities on common systems.
 #
 # Syntax:
 #
-#     nums [ options ] [ file ... ]
+#     num [ options ] [ file ... ]
 #
 # NUMS mathematics examples:
 #
-#     $ echo "1 2 4" | nums count
+#     $ echo "1 2 4" | num count
 #     3
 #
-#     $ echo "1 2 4" | nums min max range sum
+#     $ echo "1 2 4" | num min max range sum
 #     1 4 3 7
 #
-# NUMS statistics examples:
+# NUM statistics examples:
 #
-#     $ echo "1 2 4" | nums median mean
+#     $ echo "1 2 4" | num median mean
 #     2 2.33333
 #
-#     $ echo "1 2 4" | nums variance standard-deviation
+#     $ echo "1 2 4" | num variance standard-deviation
 #     1.55556 1.24722
 #
-# NUMS filter examples: #TODO
+# NUM filter examples: #TODO
 #
-#     $ echo "3 1 2" | nums sort
+#     $ echo "3 1 2" | num sort
 #     1 2 3
 #
-#     $ echo "1 2 2 3 4 4" | nums unique
+#     $ echo "1 2 2 3 4 4" | num unique
 #     1 2 3 4
 #
-# NUMS knows to skip items that are not numbers: #TODO
+# NUM knows to skip items that are not numbers: #TODO
 #
-#     $ echo "a 1 b 2 c 4" | nums count
+#     $ echo "a 1 b 2 c 4" | num count
 #     3
 #
-# NUMS input optimization examples: #TODO
+# NUM input optimization examples: #TODO
 #
-#     $ echo "1 2 3 4" | nums input-is-ascending max
+#     $ echo "1 2 3 4" | num input-is-ascending max
 #     4
 #
-#     $ echo "1 2 3 4" | nums input-is-linear mean
+#     $ echo "1 2 3 4" | num input-is-linear mean
 #     2.5
 #
-#     $ echo "1 2 3 4" | nums input-is-sorted median
+#     $ echo "1 2 3 4" | num input-is-sorted median
 #     2.5
 #
-#     $ echo "1 2 3 4" | nums input-is-unique mode
+#     $ echo "1 2 3 4" | num input-is-unique mode
 #     ?
 #
-# NUMS input can use stdin or files:
+# NUM input can use stdin or files:
 #
-#     $ echo "1 2 4" | nums sum
+#     $ echo "1 2 4" | num sum
 #     7
 #
 #     $ echo "1 2 4" > text.txt
-#     $ nums sum test.txt
+#     $ num sum test.txt
 #     7
 #
-# NUMS output examples:
+# NUM output examples:
 #
-#     $ echo "1 2 4" | nums all output-csv
+#     $ echo "1 2 4" | num all output-csv
 #     1,2,4
 #
-#     $ echo "1 2 4" | nums all output-tsv
+#     $ echo "1 2 4" | num all output-tsv
 #     1\t2\t4
 #
 #

@@ -1,0 +1,154 @@
+#!/bin/sh
+
+assert_eq() {
+  expect="$1"
+  actual="$2"
+  msg="$3"
+  if [ "$expect" == "$actual" ]; then
+    echo "assert_eq $msg expect:$expect actual:$actual SUCCESS"
+  else
+    echo "assert_eq $msg expect:$expect actual:$actual FAILURE"
+  fi
+}
+
+x=$(echo "1 2 4"       | ./num all)                           && assert_eq "1 2 4" "$x" "all"
+x=$(echo "1 2 4"       | ./num first)                         && assert_eq 1 "$x" "first"
+x=$(echo "1 2 4"       | ./num last)                          && assert_eq 4 "$x" "last"
+
+x=$(echo "1 2 4"       | ./num n)                             && assert_eq 3 "$x" "n"
+x=$(echo "1 2 4"       | ./num count)                         && assert_eq 3 "$x" "count"
+x=$(echo "1 2 4"       | ./num length)                        && assert_eq 3 "$x" "length"
+
+x=$(echo "1 2 4"       | ./num minimum)                       && assert_eq 1 "$x" "minimum"
+x=$(echo "1 2 4"       | ./num min)                           && assert_eq 1 "$x" "min"
+
+x=$(echo "1 2 4"       | ./num maximum)                       && assert_eq 4 "$x" "maximum"
+x=$(echo "1 2 4"       | ./num max)                           && assert_eq 4 "$x" "max"
+
+x=$(echo "1 2 4"       | ./num range)                         && assert_eq 3 "$x" "range"
+x=$(echo "1 2 4"       | ./num spread)                        && assert_eq 3 "$x" "spread"
+
+x=$(echo "1 2 4"       | ./num sum)                           && assert_eq 7 "$x" "sum"
+x=$(echo "1 2 4"       | ./num total)                         && assert_eq 7 "$x" "total"
+
+x=$(echo "1 2 4"       | ./num mean)                          && assert_eq 2.33333 "$x" "mean"
+x=$(echo "1 2 4"       | ./num average)                       && assert_eq 2.33333 "$x" "average"
+x=$(echo "1 2 4"       | ./num avg)                           && assert_eq 2.33333 "$x" "avg"
+
+x=$(echo "1 2 4"       | ./num median)                        && assert_eq 2 "$x" "median"
+x=$(echo "1 2 4"       | ./num median)                        && assert_eq 2 "$x" "median"
+
+x=$(echo "1 2 4"       | ./num middle)                        && assert_eq 2 "$x" "middle"
+x=$(echo "1 2 4"       | ./num mid)                           && assert_eq 2 "$x" "mid"
+
+x=$(echo "1 2 4 4"     | ./num mode)                          && assert_eq 4 "$x" "mode with unimodal"
+x=$(echo "1 2 2 4 4"   | ./num mode)                          && assert_eq 2 "$x" "mode with bimodal"
+x=$(echo "1 2 4"       | ./num mode)                          && assert_eq "NAN" "$x" "mode with nonmodal"
+
+x=$(echo "1 2 4 4"     | ./num modes)                         && assert_eq "4" "$x" "modes with unimodal"
+x=$(echo "1 2 2 4 4"   | ./num modes)                         && assert_eq "2 4" "$x" "modes with bimodal"
+x=$(echo "1 2 4"       | ./num modes)                         && assert_eq "NAN" "$x" "modes with nonmodal"
+
+x=$(echo "1 2 4"       | ./num sum-of-squares)                && assert_eq 4.66667 "$x" "sum-of-squares"
+x=$(echo "1 2 4"       | ./num sumofsquares)                  && assert_eq 4.66667 "$x" "sumofsquares"
+x=$(echo "1 2 4"       | ./num sum-squares)                   && assert_eq 4.66667 "$x" "sum-squares"
+x=$(echo "1 2 4"       | ./num sumsquares)                    && assert_eq 4.66667 "$x" "sum-squares"
+x=$(echo "1 2 4"       | ./num sum2)                          && assert_eq 4.66667 "$x" "sum2"
+x=$(echo "1 2 4"       | ./num ss)                            && assert_eq 4.66667 "$x" "ss"
+
+x=$(echo "1 2 4"       | ./num variance)                      && assert_eq 1.55556 "$x" "variance"
+x=$(echo "1 2 4"       | ./num var)                           && assert_eq 1.55556 "$x" "var"
+
+x=$(echo "1 2 4"       | ./num standard-deviation)            && assert_eq 1.24722 "$x" "standard-deviation"
+x=$(echo "1 2 4"       | ./num standarddeviation)             && assert_eq 1.24722 "$x" "standarddeviation"
+x=$(echo "1 2 4"       | ./num stdev)                         && assert_eq 1.24722 "$x" "stdev"
+x=$(echo "1 2 4"       | ./num sd)                            && assert_eq 1.24722 "$x" "sd"
+
+x=$(echo "1 2 4"       | ./num coefficient-of-variance)       && assert_eq 0.534522 "$x" "coefficient-of-variance"
+x=$(echo "1 2 4"       | ./num coefficientofvariance)         && assert_eq 0.534522 "$x" "coefficientofvariance"
+x=$(echo "1 2 4"       | ./num coefficient-variance)          && assert_eq 0.534522 "$x" "coefficient-variance"
+x=$(echo "1 2 4"       | ./num coefficientvariance)           && assert_eq 0.534522 "$x" "coefficientvariance"
+x=$(echo "1 2 4"       | ./num co-var)                        && assert_eq 0.534522 "$x" "co-var"
+x=$(echo "1 2 4"       | ./num covar)                         && assert_eq 0.534522 "$x" "covar"
+x=$(echo "1 2 4"       | ./num cv)                            && assert_eq 0.534522 "$x" "cv"
+
+## Booleans
+
+#x=$(echo "1 2 4"       | ./num is-ascending)                  && assert_eq 1 "$x" "is-ascending true with uniques"
+#x=$(echo "1 2 2 4"     | ./num is-ascending)                  && assert_eq 1 "$x" "is-ascending true with duplicates"
+#x=$(echo "2 2 2"       | ./num is-ascending)                  && assert_eq 1 "$x" "is-ascending true with all equals"
+#x=$(echo "4 2 1"       | ./num is-ascending)                  && assert_eq 0 "$x" "is-ascending false with uniques"
+#x=$(echo "4 2 2 1"     | ./num is-ascending)                  && assert_eq 0 "$x" "is-ascending false with duplicates"
+
+#x=$(echo "4 2 1"       | ./num is-descending)                 && assert_eq 1 "$x" "is-descending true with uniques"
+#x=$(echo "4 2 2 1"     | ./num is-descending)                 && assert_eq 1 "$x" "is-descending true with duplicates"
+#x=$(echo "2 2 2"       | ./num is-descending)                 && assert_eq 1 "$x" "is-descending true with all equals"
+#x=$(echo "1 2 4"       | ./num is-descending)                 && assert_eq 0 "$x" "is-descending false with uniques"
+#x=$(echo "1 2 2 4"     | ./num is-descending)                 && assert_eq 0 "$x" "is-descending false with duplicates"
+
+#x=$(echo "1 2 3"       | ./num is-linear)                     && assert_eq 1 "$x" "is-linear true with ascending"
+#x=$(echo "3 2 1"       | ./num is-linear)                     && assert_eq 1 "$x" "is-linear true with descending"
+#x=$(echo "2 2 2"       | ./num is-linear)                     && assert_eq 1 "$x" "is-linear true with all equals"
+#x=$(echo "1 2 4"       | ./num is-linear)                     && assert_eq 0 "$x" "is-linear false"
+
+#x=$(echo "1 2 4"       | ./num is-sorted)                     && assert_eq 1 "$x" "is-sorted true with ascending and uniques"
+#x=$(echo "1 2 2 4"     | ./num is-sorted)                     && assert_eq 0 "$x" "is-sorted true with ascending and duplicates"
+#x=$(echo "4 2 1"       | ./num is-sorted)                     && assert_eq 1 "$x" "is-sorted true with descending and uniques"
+#x=$(echo "4 2 2 1"     | ./num is-sorted)                     && assert_eq 1 "$x" "is-sorted true with descending and duplicates"
+#x=$(echo "2 2 2"       | ./num is-sorted)                     && assert_eq 1 "$x" "is-sorted true with all equals"
+#x=$(echo "1 4 2"       | ./num is-sorted)                     && assert_eq 0 "$x" "is-sorted false"
+
+#x=$(echo "1 2 4"       | ./num is-unique)                     && assert_eq 1 "$x" "is-unique true"
+#x=$(echo "1 2 2 4"     | ./num is-unique)                     && assert_eq 0 "$x" "is-unique false"
+
+## Filters
+
+#x=$(echo "1 2 2 3"     | ./num unique)                        && assert_eq "1 2 3" "$x" "unique"
+#x=$(echo "1 2 2 3"     | ./num effect-unique)                 && assert_eq "1 2 3" "$x" "effect-unique"
+#x=$(echo "1 2 2 3"     | ./num effectunique)                  && assert_eq "1 2 3" "$x" "effectunique"
+#x=$(echo "1 2 2 3"     | ./num select-unique)                 && assert_eq "1 3" "$x" "select-unique"
+#x=$(echo "1 2 2 3"     | ./num selectunique)                  && assert_eq "1 3" "$x" "selectunique"
+#x=$(echo "1 2 2 3"     | ./num reject-unique)                 && assert_eq "2" "$x" "reject-unique"
+#x=$(echo "1 2 2 3"     | ./num rejectunique)                  && assert_eq "2" "$x" "rejectunique"
+
+#x=$(echo "3 1 2"       | ./num sort)                          && assert_eq "1 2 3" "$x" "sort"
+#x=$(echo "3 1 2"       | ./num sort-ascending)                && assert_eq "1 2 3" "$x" "sort-ascending"
+#x=$(echo "3 1 2"       | ./num sortascending)                 && assert_eq "1 2 3" "$x" "sortascending"
+#x=$(echo "3 1 2"       | ./num sort-asc)                      && assert_eq "1 2 3" "$x" "sort-asc"
+#x=$(echo "3 1 2"       | ./num sortasc)                       && assert_eq "1 2 3" "$x" "sortasc"
+#x=$(echo "3 1 2"       | ./num sort-descending)               && assert_eq "3 2 1" "$x" "sort-descending"
+#x=$(echo "3 1 2"       | ./num sortdescending)                && assert_eq "3 2 1" "$x" "sortdescending"
+#x=$(echo "3 1 2"       | ./num sort-desc)                     && assert_eq "3 2 1" "$x" "sort-desc"
+#x=$(echo "3 1 2"       | ./num sortdesc)                      && assert_eq "3 2 1" "$x" "sortdesc"
+
+## Input
+
+#x=$(echo "1 2\n3 4"    | ./num input-fields sum)              && assert_eq "3\n7" "$x" "input-fields"
+#x=$(echo "1 2\n3 4"    | ./num inputfields sum)               && assert_eq "3\n7" "$x" "inputfields"
+
+#x=$(echo "1 2\n3 4"    | ./num input-records sum)             && assert_eq "21" "$x" "input-records"
+#x=$(echo "1 2\n3 4"    | ./num inputrecords sum)              && assert_eq "21" "$x" "inputrecords"
+
+#x=$(echo "1 2 4"       | ./num input-is-linear               && assert_eq "?" "$x" "input-is-linear"
+#x=$(echo "1 2 4"       | ./num inputislinear)                && assert_eq "?" "$x" "inputislinear"
+#x=$(echo "1 2 4"       | ./num input-linear)                 && assert_eq "?" "$x" "input-linear"
+#x=$(echo "1 2 4"       | ./num inputlinear)                  && assert_eq "?" "$x" "inputlinear"
+
+#x=$(echo "1 2 4"       | ./num input-is-sorted               && assert_eq "?" "$x" "input-is-sorted"
+#x=$(echo "1 2 4"       | ./num inputissorted)                && assert_eq "?" "$x" "inputissorted"
+#x=$(echo "1 2 4"       | ./num input-sorted)                 && assert_eq "?" "$x" "input-sorted"
+#x=$(echo "1 2 4"       | ./num inputsorted)                  && assert_eq "?" "$x" "inputsorted"
+
+#x=$(echo "1 2 4"       | ./num input-is-unique)              && assert_eq "?" "$x" "input-is-unique"
+#x=$(echo "1 2 4"       | ./num inputisunique)                && assert_eq "?" "$x" "inputisunique"
+#x=$(echo "1 2 4"       | ./num input-unique)                 && assert_eq "?" "$x" "input-unique"
+#x=$(echo "1 2 4"       | ./num inputunique)                  && assert_eq "?" "$x" "inputunique"
+
+## Output
+
+#x=$(echo "1 2 4"       | ./num n min max output-label)        && assert_eq "n 3 minimum 1 maximum 4" "$x" "output-label"
+#x=$(echo "1 2 4"       | ./num n min max outputlabel)         && assert_eq "n 3 minimum 1 maximum 4" "$x" "outputlabel"
+#x=$(echo "1 2 4"       | ./num all output-csv)                && assert_eq "3,1,4" "$x" "output-csv"
+#x=$(echo "1 2 4"       | ./num all outputcsv)                 && assert_eq "3,1,4" "$x" "outputcsv"
+#x=$(echo "1 2 4"       | ./num all output-tsv)                && assert_eq "3"$'\t'"1"$'\t'"4" "$x" "output-tsv"
+#x=$(echo "1 2 4"       | ./num all outputtsv)                 && assert_eq "3"$'\t'"1"$'\t'"4" "$x" "outputtsv"
